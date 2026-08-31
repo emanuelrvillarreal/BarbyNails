@@ -1,0 +1,504 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // conexion pooled (PgBouncer, puerto 6543) - usada en runtime
+  directUrl = env("DIRECT_URL")   // conexion directa (puerto 5432) - usada solo por prisma migrate
+}
+
+// =========================================================
+// ENUMS
+// =========================================================
+
+enum Role {
+  SYSADMIN
+  OWNER
+  PROFESSIONAL
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum WhatsappReminderStatus {
+  SENT
+  CONFIRMED
+  CANCELLED
+  NO_RESPONSE
+}
+
+enum WhatsappTemplateType {
+  APPOINTMENT_REMINDER
+  PAYMENT_PENDING
+  PROMOTION
+}
+
+enum WhatsappCampaignType {
+  PAYMENT_PENDING
+  PROMOTION
+}
+
+enum WhatsappRecipientStatus {
+  PENDING
+  SENT
+  SKIPPED
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum PaymentMethod {
+  CASH
+  TRANSFER
+  MP_QR
+  MP_POINT
+}
+
+enum AttendanceStatus {
+  PRESENT
+  LATE
+  EARLY_DEPARTURE
+  ABSENT
+  JUSTIFIED_ABSENCE
+}
+
+// =========================================================
+// AUTH
+// =========================================================
+
+model User {
+  id             String   @id @default(uuid())
+  email          String   @unique
+  passwordHash   String   @map("password_hash")
+  role           Role
+  professionalId String?  @map("professional_id")
+  professional   Professional? @relation(fields: [professionalId], references: [id])
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  appointmentsCreated   Appointment[]            @relation("AppointmentCreatedBy")
+  transactionsCreated   Transaction[]            @relation("TransactionCreatedBy")
+  cashRegistersClosed   CashRegister[]           @relation("CashRegisterClosedBy")
+  whatsappRemindersSent WhatsappReminder[]       @relation("ReminderSentBy")
+  whatsappCampaigns     WhatsappCampaign[]       @relation("CampaignCreatedBy")
+  attendanceRecordsSet  AttendanceRecord[]       @relation("AttendanceSetBy")
+  clientNotesWritten    ClientNote[]
+
+  @@index([professionalId])
+  @@map("users")
+}
+
+// =========================================================
+// PERSONAL / PROFESSIONALS
+// =========================================================
+
+model Professional {
+  id             String   @id @default(uuid())
+  firstName      String   @map("first_name")
+  lastName       String   @map("last_name")
+  documentNumber String?  @map("document_number")
+  phone          String?
+  email          String?
+  address        String?
+  hireDate       DateTime? @map("hire_date") @db.Date
+  position       String?
+  bankAlias      String?  @map("bank_alias")
+  bankCbu        String?  @map("bank_cbu")
+  bankName       String?  @map("bank_name")
+  colorHex       String   @map("color_hex")
+  commissionPct  Decimal  @map("commission_pct") @db.Decimal(5, 2)
+  active         Boolean  @default(true)
+  displayOrder   Int      @map("display_order")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  users               User[]
+  schedules           ProfessionalSchedule[]
+  attendanceRecords   AttendanceRecord[]
+  appointments        Appointment[]
+  transactionServices TransactionService[]
+  commissionSettlements CommissionSettlement[]
+  commissionRates     ProfessionalCommissionRate[]
+  tipTransactions     Transaction[] @relation("TransactionTipProfessional")
+
+  @@map("professionals")
+}
+
+// Excepcion de % de comision por profesional + categoria de servicio (ej. "Cejas
+// y Pestañas" paga distinto que el % general). Si no existe fila para una
+// categoria, se usa Professional.commissionPct como default.
+model ProfessionalCommissionRate {
+  id             String   @id @default(uuid())
+  professionalId String   @map("professional_id")
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  categoryId     String   @map("category_id")
+  category       ServiceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  commissionPct  Decimal  @map("commission_pct") @db.Decimal(5, 2)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@unique([professionalId, categoryId])
+  @@index([categoryId])
+  @@map("professional_commission_rates")
+}
+
+model ProfessionalSchedule {
+  id             String   @id @default(uuid())
+  professionalId String   @map("professional_id")
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  dayOfWeek      Int      @map("day_of_week") // 0=domingo ... 6=sabado
+  startTime      DateTime @map("start_time") @db.Time
+  endTime        DateTime @map("end_time") @db.Time
+  active         Boolean  @default(true)
+
+  @@index([professionalId])
+  @@map("professional_schedules")
+}
+
+model AttendanceRecord {
+  id             String   @id @default(uuid())
+  professionalId String   @map("professional_id")
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  date           DateTime @db.Date
+  checkInTime    DateTime? @map("check_in_time")
+  checkOutTime   DateTime? @map("check_out_time")
+  status         AttendanceStatus
+  notes          String?
+  setByUserId    String?  @map("set_by_user_id")
+  setByUser      User?    @relation("AttendanceSetBy", fields: [setByUserId], references: [id])
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@unique([professionalId, date])
+  @@index([setByUserId])
+  @@map("attendance_records")
+}
+
+// =========================================================
+// CATALOGO
+// =========================================================
+
+model ServiceCategory {
+  id           String   @id @default(uuid())
+  name         String
+  displayOrder Int      @map("display_order")
+  active       Boolean  @default(true)
+
+  services Service[]
+  commissionRates ProfessionalCommissionRate[]
+
+  @@map("service_categories")
+}
+
+model Service {
+  id              String   @id @default(uuid())
+  name            String
+  categoryId      String   @map("category_id")
+  category        ServiceCategory @relation(fields: [categoryId], references: [id])
+  price           Decimal  @db.Decimal(10, 2)
+  durationMinutes Int      @map("duration_minutes")
+  bufferMinutes   Int      @default(0) @map("buffer_minutes")
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  clientInterests     ClientServiceInterest[]
+  appointmentServices  AppointmentService[]
+  transactionServices  TransactionService[]
+
+  @@index([categoryId])
+  @@map("services")
+}
+
+// =========================================================
+// CLIENTAS (CRM)
+// =========================================================
+
+model Client {
+  id             String   @id @default(uuid())
+  firstName      String   @map("first_name")
+  lastName       String   @map("last_name")
+  phone          String
+  email          String?
+  address        String?
+  birthday       DateTime? @db.Date
+  internalNotes     String?   @map("internal_notes")
+  isSavedContact    Boolean   @default(false) @map("is_saved_contact")
+  isBlacklisted     Boolean   @default(false) @map("is_blacklisted")
+  blacklistedReason String?   @map("blacklisted_reason")
+  blacklistedAt     DateTime? @map("blacklisted_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  serviceInterests      ClientServiceInterest[]
+  appointments          Appointment[]
+  transactions          Transaction[]
+  whatsappCampaignRecipients WhatsappCampaignRecipient[]
+  notes                 ClientNote[]
+
+  @@map("clients")
+}
+
+// Historial de notas por visita (alergias, cuidados especiales, si se hizo de
+// cero, etc.) - a diferencia de Client.internalNotes (un solo campo general),
+// esto es un log versionado: cada nota queda fechada, con quien la escribio y,
+// opcionalmente, ligada al turno puntual de esa visita. Asi la profesional que
+// atiende a la clienta la proxima vez ve el historial completo, no solo un dato
+// suelto que se pisa.
+model ClientNote {
+  id             String   @id @default(uuid())
+  clientId       String   @map("client_id")
+  client         Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  appointmentId  String?  @map("appointment_id")
+  appointment    Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  authorUserId   String   @map("author_user_id")
+  author         User     @relation(fields: [authorUserId], references: [id])
+  body           String
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([clientId])
+  @@index([appointmentId])
+  @@map("client_notes")
+}
+
+model ClientServiceInterest {
+  clientId  String  @map("client_id")
+  client    Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  serviceId String  @map("service_id")
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@id([clientId, serviceId])
+  @@map("client_service_interests")
+}
+
+// =========================================================
+// AGENDA
+// =========================================================
+
+model Appointment {
+  id              String   @id @default(uuid())
+  clientId        String   @map("client_id")
+  client          Client   @relation(fields: [clientId], references: [id])
+  professionalId  String   @map("professional_id")
+  professional    Professional @relation(fields: [professionalId], references: [id])
+  startDatetime   DateTime @map("start_datetime")
+  endDatetime     DateTime @map("end_datetime")
+  status          AppointmentStatus @default(PENDING)
+  cancelledReason String?  @map("cancelled_reason")
+  createdByUserId String   @map("created_by_user_id")
+  createdByUser   User     @relation("AppointmentCreatedBy", fields: [createdByUserId], references: [id])
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  services         AppointmentService[]
+  whatsappReminder WhatsappReminder?
+  clientNotes      ClientNote[]
+
+  @@index([professionalId, startDatetime])
+  @@index([clientId])
+  @@index([createdByUserId])
+  @@map("appointments")
+}
+
+model AppointmentService {
+  id                        String   @id @default(uuid())
+  appointmentId             String   @map("appointment_id")
+  appointment               Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  serviceId                 String   @map("service_id")
+  service                   Service  @relation(fields: [serviceId], references: [id])
+  priceAtBooking            Decimal  @map("price_at_booking") @db.Decimal(10, 2)
+  durationMinutesAtBooking  Int      @map("duration_minutes_at_booking")
+  bufferMinutesAtBooking    Int      @map("buffer_minutes_at_booking")
+
+  @@index([appointmentId])
+  @@index([serviceId])
+  @@map("appointment_services")
+}
+
+// =========================================================
+// WHATSAPP (envio manual, sin API)
+// =========================================================
+
+model WhatsappReminder {
+  id               String   @id @default(uuid())
+  appointmentId    String   @unique @map("appointment_id")
+  appointment      Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  sentAt           DateTime? @map("sent_at")
+  sentByUserId     String?  @map("sent_by_user_id")
+  sentByUser       User?    @relation("ReminderSentBy", fields: [sentByUserId], references: [id])
+  status           WhatsappReminderStatus @default(SENT)
+  statusUpdatedAt  DateTime? @map("status_updated_at")
+
+  @@index([sentByUserId])
+  @@map("whatsapp_reminders")
+}
+
+model WhatsappMessageTemplate {
+  id        String   @id @default(uuid())
+  type      WhatsappTemplateType
+  name      String
+  bodyText  String   @map("body_text")
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  campaigns WhatsappCampaign[]
+
+  @@map("whatsapp_message_templates")
+}
+
+model WhatsappCampaign {
+  id              String   @id @default(uuid())
+  templateId      String   @map("template_id")
+  template        WhatsappMessageTemplate @relation(fields: [templateId], references: [id])
+  type            WhatsappCampaignType
+  createdByUserId String   @map("created_by_user_id")
+  createdByUser   User     @relation("CampaignCreatedBy", fields: [createdByUserId], references: [id])
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  recipients WhatsappCampaignRecipient[]
+
+  @@index([templateId])
+  @@index([createdByUserId])
+  @@map("whatsapp_campaigns")
+}
+
+model WhatsappCampaignRecipient {
+  id         String   @id @default(uuid())
+  campaignId String   @map("campaign_id")
+  campaign   WhatsappCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  clientId   String   @map("client_id")
+  client     Client   @relation(fields: [clientId], references: [id])
+  sentAt     DateTime? @map("sent_at")
+  status     WhatsappRecipientStatus @default(PENDING)
+
+  @@index([campaignId])
+  @@index([clientId])
+  @@map("whatsapp_campaign_recipients")
+}
+
+// =========================================================
+// FINANZAS
+// =========================================================
+
+model Transaction {
+  id               String   @id @default(uuid())
+  type             TransactionType
+  amount           Decimal  @db.Decimal(10, 2)
+  paymentMethod    PaymentMethod @map("payment_method")
+  concept          String
+  clientId         String?  @map("client_id")
+  client           Client?  @relation(fields: [clientId], references: [id])
+  tipAmount        Decimal  @default(0) @map("tip_amount") @db.Decimal(10, 2)
+  // Cuando se carga, TODA la propina de esta transaccion es de esta profesional
+  // (sin prorratear por servicios) - pensado para propinas sueltas que se dejan
+  // aparte, sin ir ligadas a los items de servicio de la venta.
+  tipProfessionalId String? @map("tip_professional_id")
+  tipProfessional  Professional? @relation("TransactionTipProfessional", fields: [tipProfessionalId], references: [id])
+  netAmount        Decimal  @map("net_amount") @db.Decimal(10, 2)
+  datetime         DateTime
+  cashRegisterId   String?  @map("cash_register_id")
+  cashRegister     CashRegister? @relation(fields: [cashRegisterId], references: [id])
+  createdByUserId  String   @map("created_by_user_id")
+  createdByUser    User     @relation("TransactionCreatedBy", fields: [createdByUserId], references: [id])
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  services TransactionService[]
+
+  @@index([datetime])
+  @@index([clientId])
+  @@index([cashRegisterId])
+  @@index([createdByUserId])
+  @@index([tipProfessionalId])
+  @@map("transactions")
+}
+
+model TransactionService {
+  id                  String   @id @default(uuid())
+  transactionId       String   @map("transaction_id")
+  transaction         Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  serviceId           String   @map("service_id")
+  service              Service @relation(fields: [serviceId], references: [id])
+  professionalId       String   @map("professional_id")
+  professional         Professional @relation(fields: [professionalId], references: [id])
+  priceAtTransaction   Decimal  @map("price_at_transaction") @db.Decimal(10, 2)
+
+  @@index([transactionId])
+  @@index([serviceId])
+  @@index([professionalId])
+  @@map("transaction_services")
+}
+
+model PaymentMethodFee {
+  id             String   @id @default(uuid())
+  paymentMethod  PaymentMethod @map("payment_method") // solo aplica MP_QR / MP_POINT
+  feePct         Decimal  @map("fee_pct") @db.Decimal(5, 2)
+  effectiveFrom  DateTime @map("effective_from") @db.Date
+
+  @@map("payment_method_fees")
+}
+
+model CashRegister {
+  id               String   @id @default(uuid())
+  date             DateTime @unique @db.Date
+  openingBalance   Decimal  @map("opening_balance") @db.Decimal(10, 2)
+  totalIncome      Decimal? @map("total_income") @db.Decimal(10, 2)
+  totalExpense     Decimal? @map("total_expense") @db.Decimal(10, 2)
+  closingBalance   Decimal? @map("closing_balance") @db.Decimal(10, 2)
+  closedAt         DateTime? @map("closed_at")
+  closedByUserId   String?  @map("closed_by_user_id")
+  closedByUser     User?    @relation("CashRegisterClosedBy", fields: [closedByUserId], references: [id])
+
+  transactions Transaction[]
+
+  @@index([closedByUserId])
+  @@map("cash_registers")
+}
+
+model CommissionSettlement {
+  id                    String   @id @default(uuid())
+  professionalId        String   @map("professional_id")
+  professional          Professional @relation(fields: [professionalId], references: [id])
+  periodStart           DateTime @map("period_start") @db.Date
+  periodEnd             DateTime @map("period_end") @db.Date
+  totalServiceAmount    Decimal  @map("total_service_amount") @db.Decimal(10, 2)
+  commissionPctApplied  Decimal  @map("commission_pct_applied") @db.Decimal(5, 2) // % promedio ponderado (puede variar por categoria, ver breakdown)
+  totalCommission       Decimal  @map("total_commission") @db.Decimal(10, 2)
+  totalTips             Decimal  @default(0) @map("total_tips") @db.Decimal(10, 2) // propinas atribuidas (no llevan %, van enteras a la profesional)
+  breakdown             Json?    // desglose por categoria: [{categoryId, categoryName, serviceAmount, commissionPct, commissionAmount}]
+  paid                  Boolean  @default(false)
+  generatedAt           DateTime @default(now()) @map("generated_at")
+
+  @@index([professionalId])
+  @@map("commission_settlements")
+}
+
+// =========================================================
+// CONFIGURACION DEL SISTEMA & BRANDING
+// =========================================================
+
+model SystemSettings {
+  id          String   @id @default("default")
+  salonName   String   @default("Barby Nails & Spa") @map("salon_name")
+  logoUrl     String?  @map("logo_url")
+  accentColor String?  @default("#ec4899") @map("accent_color")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("system_settings")
+}
+
+// =========================================================
+// FASE 2 (no se crea todavia, dejar como referencia)
+// - inventory_items, service_inventory_usage (stock)
+// - service_combos, combo_services (packs con descuento)
+// - waitlist (lista de espera de huecos)
+// =========================================================
