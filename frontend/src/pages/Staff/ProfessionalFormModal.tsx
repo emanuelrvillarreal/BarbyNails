@@ -120,11 +120,11 @@ export default function ProfessionalFormModal({ professional, onClose, onSaved }
   return (
     <Modal open onClose={onClose} title={professional ? 'Editar profesional' : 'Nueva profesional'} maxWidth="md">
         <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <input placeholder="Nombre" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="rounded-lg border border-neutral-300 px-3 py-2" />
             <input placeholder="Apellido" value={lastName} onChange={(e) => setLastName(e.target.value)} className="rounded-lg border border-neutral-300 px-3 py-2" />
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <input placeholder="Teléfono" value={phone} onChange={(e) => setPhone(e.target.value)} className="rounded-lg border border-neutral-300 px-3 py-2" />
             <input placeholder="Puesto (ej. Manicurista)" value={position} onChange={(e) => setPosition(e.target.value)} className="rounded-lg border border-neutral-300 px-3 py-2" />
           </div>
@@ -135,13 +135,13 @@ export default function ProfessionalFormModal({ professional, onClose, onSaved }
 
           <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-3 space-y-2">
             <p className="text-xs font-bold text-emerald-800 uppercase tracking-wider">💳 Datos Bancarios (para transferencias)</p>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <input placeholder="Alias (ej: barby.mp)" value={bankAlias} onChange={(e) => setBankAlias(e.target.value)} className="rounded-lg border border-neutral-300 px-3 py-1.5 text-xs font-semibold bg-white" />
               <input placeholder="Banco (ej. Mercado Pago)" value={bankName} onChange={(e) => setBankName(e.target.value)} className="rounded-lg border border-neutral-300 px-3 py-1.5 text-xs bg-white" />
             </div>
             <input placeholder="CBU / CVU (22 dígitos)" value={bankCbu} onChange={(e) => setBankCbu(e.target.value)} className="w-full rounded-lg border border-neutral-300 px-3 py-1.5 text-xs bg-white font-mono" />
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <label className="text-xs text-neutral-500">
               Color en agenda
               <input type="color" value={colorHex} onChange={(e) => setColorHex(e.target.value)} className="mt-1 h-9 w-full rounded-lg border border-neutral-300" />

@@ -3,7 +3,8 @@ import { useAuth } from '../../context/AuthContext';
 import { fetchProfessionals, fetchServices } from '../../api/catalog';
 import { fetchAppointments, fetchGaps } from '../../api/agenda';
 import { fetchAbsences } from '../../api/staff';
-import type { Appointment, GapSlot, Professional, Service } from '../../api/types';
+import { fetchClients } from '../../api/clients';
+import type { Appointment, Client, GapSlot, Professional, Service } from '../../api/types';
 import { addDays, addMonths, dayRange, formatDayLabel, formatMonthLabel, getWeekDays, monthRange, today } from './dateUtils';
 import DayGrid from './DayGrid';
 import MonthGrid from './MonthGrid';
@@ -30,6 +31,7 @@ export default function AgendaPage() {
   const [dataByDay, setDataByDay] = useState<Record<string, DayData>>({});
   const [absentByDate, setAbsentByDate] = useState<Record<string, Set<string>>>({});
   const [monthAppointments, setMonthAppointments] = useState<Appointment[]>([]);
+  const [birthdayClients, setBirthdayClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(false);
 
   const [createModal, setCreateModal] = useState<{ professionalId: string; iso: string } | null>(null);
@@ -113,6 +115,28 @@ export default function AgendaPage() {
     };
   }, [viewMode, anchorDate, visibleProfessionals, reloadKey]);
 
+  useEffect(() => {
+    if (!isOwner || viewMode !== 'month') return;
+    fetchClients()
+      .then((list) => setBirthdayClients(list.filter((c) => c.birthday)))
+      .catch(() => setBirthdayClients([]));
+  }, [isOwner, viewMode]);
+
+  // Cumpleaños del mes visible: se compara solo mes/dia del nacimiento (el
+  // anio de nacimiento no importa), armando la fecha real de este mes para
+  // poder marcarla en la celda correspondiente del calendario.
+  const birthdaysByDate = useMemo(() => {
+    const map: Record<string, string[]> = {};
+    if (!isOwner || viewMode !== 'month') return map;
+    const year = anchorDate.slice(0, 4);
+    for (const c of birthdayClients) {
+      if (!c.birthday) continue;
+      const key = `${year}-${c.birthday.slice(5, 7)}-${c.birthday.slice(8, 10)}`;
+      (map[key] ??= []).push(`${c.firstName} ${c.lastName}`);
+    }
+    return map;
+  }, [birthdayClients, anchorDate, isOwner, viewMode]);
+
   const monthAppointmentsByDate = useMemo(() => {
     const map: Record<string, Appointment[]> = {};
     for (const appt of monthAppointments) {
@@ -135,14 +159,14 @@ export default function AgendaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-pink-50/40 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-pink-50/40 p-3 sm:p-6">
       <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold text-neutral-800">Agenda</h1>
           <p className="text-sm text-neutral-500">{isOwner ? 'Vista general del salon' : 'Tu agenda'}</p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {!isOwner && <SelfAttendanceWidget />}
           <div className="flex overflow-hidden rounded-xl border-2 border-neutral-200 shadow-sm">
             <button onClick={() => setViewMode('day')} className={viewMode === 'day' ? 'segment-active' : 'segment-inactive'}>
@@ -191,6 +215,7 @@ export default function AgendaPage() {
         <MonthGrid
           monthDateKey={anchorDate}
           appointmentsByDate={monthAppointmentsByDate}
+          birthdaysByDate={birthdaysByDate}
           onDayClick={(dateKey) => {
             setAnchorDate(dateKey);
             setViewMode('day');

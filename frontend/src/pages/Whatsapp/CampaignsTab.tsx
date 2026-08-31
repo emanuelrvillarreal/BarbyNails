@@ -3,6 +3,7 @@ import {
   fetchCampaigns,
   createCampaign,
   fetchCampaign,
+  deleteCampaign,
   markRecipientSent,
   fetchTemplates,
   type WhatsappCampaign,
@@ -10,8 +11,10 @@ import {
   type WhatsappTemplate,
 } from '../../api/whatsapp';
 import { fetchClients } from '../../api/clients';
-import type { Client } from '../../api/types';
+import { fetchAppointments } from '../../api/agenda';
+import type { Appointment, Client } from '../../api/types';
 import { ApiError } from '../../api/client';
+import { addDays, today } from '../Agenda/dateUtils';
 import { Select, SelectItem } from '../../components/ui/select';
 import { Modal } from '../../components/ui/dialog';
 
@@ -103,13 +106,24 @@ export default function CampaignsTab() {
   const [campaigns, setCampaigns] = useState<WhatsappCampaign[]>([]);
   const [openCampaignId, setOpenCampaignId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [deletingCampaignId, setDeletingCampaignId] = useState<string | null>(null);
 
   const [templates, setTemplates] = useState<WhatsappTemplate[]>([]);
   const [type, setType] = useState<WhatsappCampaignType>('PROMOTION');
   const [templateId, setTemplateId] = useState('');
+
+  // Promocion: se elige por clienta.
   const [clientFilter, setClientFilter] = useState<'ALL' | 'INACTIVA'>('INACTIVA');
   const [clients, setClients] = useState<Client[]>([]);
   const [selectedClientIds, setSelectedClientIds] = useState<string[]>([]);
+
+  // Pago pendiente: se elige por turno puntual (asi la plantilla puede
+  // completar monto/servicios/fecha/hora/profesional).
+  const [apptFrom, setApptFrom] = useState(addDays(today(), -30));
+  const [apptTo, setApptTo] = useState(today());
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [selectedAppointmentIds, setSelectedAppointmentIds] = useState<string[]>([]);
+
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -128,22 +142,45 @@ export default function CampaignsTab() {
   }, [showForm, type]);
 
   useEffect(() => {
-    if (!showForm) return;
+    if (!showForm || type !== 'PROMOTION') return;
     fetchClients({ status: clientFilter === 'ALL' ? undefined : 'INACTIVA' }).then(setClients);
     setSelectedClientIds([]);
-  }, [showForm, clientFilter]);
+  }, [showForm, type, clientFilter]);
+
+  useEffect(() => {
+    if (!showForm || type !== 'PAYMENT_PENDING') return;
+    fetchAppointments({ from: new Date(`${apptFrom}T00:00:00.000Z`), to: new Date(`${apptTo}T23:59:59.999Z`) })
+      .then((list) => setAppointments(list.filter((a) => a.status !== 'CANCELLED')))
+      .catch(() => setAppointments([]));
+    setSelectedAppointmentIds([]);
+  }, [showForm, type, apptFrom, apptTo]);
 
   function toggleClient(id: string) {
     setSelectedClientIds((prev) => (prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]));
   }
 
+  function toggleAppointment(id: string) {
+    setSelectedAppointmentIds((prev) => (prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]));
+  }
+
   async function handleCreate() {
     setError(null);
     if (!templateId) return setError('Elegi una plantilla');
-    if (selectedClientIds.length === 0) return setError('Elegi al menos una clienta');
+
+    const recipients =
+      type === 'PAYMENT_PENDING'
+        ? appointments
+            .filter((a) => selectedAppointmentIds.includes(a.id))
+            .map((a) => ({ clientId: a.clientId, appointmentId: a.id }))
+        : selectedClientIds.map((clientId) => ({ clientId }));
+
+    if (recipients.length === 0) {
+      return setError(type === 'PAYMENT_PENDING' ? 'Elegi al menos un turno' : 'Elegi al menos una clienta');
+    }
+
     setSubmitting(true);
     try {
-      const campaign = await createCampaign({ templateId, type, clientIds: selectedClientIds });
+      const campaign = await createCampaign({ templateId, type, recipients });
       setShowForm(false);
       load();
       setOpenCampaignId(campaign.id);
@@ -152,6 +189,13 @@ export default function CampaignsTab() {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  async function confirmDelete() {
+    if (!deletingCampaignId) return;
+    await deleteCampaign(deletingCampaignId);
+    setDeletingCampaignId(null);
+    load();
   }
 
   if (openCampaignId) {
@@ -166,7 +210,7 @@ export default function CampaignsTab() {
         </button>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
+      <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white">
         <table className="w-full text-left text-sm">
           <thead className="bg-neutral-50 text-neutral-500">
             <tr>
@@ -186,9 +230,12 @@ export default function CampaignsTab() {
                 <td className="px-4 py-2 text-neutral-500">{c.recipients.length}</td>
                 <td className="px-4 py-2 text-neutral-500">{c.recipients.filter((r) => r.status === 'SENT').length}</td>
                 <td className="px-4 py-2 text-neutral-500">{c.createdAt.slice(0, 10)}</td>
-                <td className="px-4 py-2 text-right">
+                <td className="space-x-2 px-4 py-2 text-right">
                   <button onClick={() => setOpenCampaignId(c.id)} className="link-action">
                     Ver
+                  </button>
+                  <button onClick={() => setDeletingCampaignId(c.id)} className="link-action-muted">
+                    Borrar
                   </button>
                 </td>
               </tr>
@@ -233,32 +280,69 @@ export default function CampaignsTab() {
                 ))}
               </Select>
 
-              <div className="flex overflow-hidden rounded-lg border border-neutral-300">
-                <button
-                  onClick={() => setClientFilter('INACTIVA')}
-                  className={`flex-1 py-1.5 text-xs font-medium ${clientFilter === 'INACTIVA' ? 'bg-violet-500 text-white' : 'bg-white text-neutral-600'}`}
-                >
-                  Solo inactivas
-                </button>
-                <button
-                  onClick={() => setClientFilter('ALL')}
-                  className={`flex-1 py-1.5 text-xs font-medium ${clientFilter === 'ALL' ? 'bg-violet-500 text-white' : 'bg-white text-neutral-600'}`}
-                >
-                  Todas
-                </button>
-              </div>
+              {type === 'PROMOTION' ? (
+                <>
+                  <div className="flex overflow-hidden rounded-lg border border-neutral-300">
+                    <button
+                      onClick={() => setClientFilter('INACTIVA')}
+                      className={`flex-1 py-1.5 text-xs font-medium ${clientFilter === 'INACTIVA' ? 'bg-violet-500 text-white' : 'bg-white text-neutral-600'}`}
+                    >
+                      Solo inactivas
+                    </button>
+                    <button
+                      onClick={() => setClientFilter('ALL')}
+                      className={`flex-1 py-1.5 text-xs font-medium ${clientFilter === 'ALL' ? 'bg-violet-500 text-white' : 'bg-white text-neutral-600'}`}
+                    >
+                      Todas
+                    </button>
+                  </div>
 
-              <div className="max-h-48 space-y-1 overflow-y-auto rounded-lg border border-neutral-200 p-2">
-                {clients.map((c) => (
-                  <label key={c.id} className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" checked={selectedClientIds.includes(c.id)} onChange={() => toggleClient(c.id)} />
-                    {c.firstName} {c.lastName}
-                    {c.isSavedContact && <span className="text-xs text-emerald-600">(guardada)</span>}
-                  </label>
-                ))}
-                {clients.length === 0 && <p className="text-sm text-neutral-400">No hay clientas para este filtro.</p>}
-              </div>
-              <p className="text-xs text-neutral-400">{selectedClientIds.length} seleccionada(s)</p>
+                  <div className="max-h-48 space-y-1 overflow-y-auto rounded-lg border border-neutral-200 p-2">
+                    {clients.map((c) => (
+                      <label key={c.id} className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={selectedClientIds.includes(c.id)} onChange={() => toggleClient(c.id)} />
+                        {c.firstName} {c.lastName}
+                        {c.isSavedContact && <span className="text-xs text-emerald-600">(guardada)</span>}
+                      </label>
+                    ))}
+                    {clients.length === 0 && <p className="text-sm text-neutral-400">No hay clientas para este filtro.</p>}
+                  </div>
+                  <p className="text-xs text-neutral-400">{selectedClientIds.length} seleccionada(s)</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-xs text-neutral-500">
+                    Elegí el turno correspondiente a cada clienta — así la plantilla puede completar monto, servicios, fecha, hora y
+                    profesional.
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input type="date" value={apptFrom} onChange={(e) => setApptFrom(e.target.value)} className="rounded-lg border border-neutral-300 px-2 py-1.5 text-sm" />
+                    <input type="date" value={apptTo} onChange={(e) => setApptTo(e.target.value)} className="rounded-lg border border-neutral-300 px-2 py-1.5 text-sm" />
+                  </div>
+
+                  <div className="max-h-56 space-y-1 overflow-y-auto rounded-lg border border-neutral-200 p-2">
+                    {appointments.map((a) => {
+                      const monto = a.services.reduce((sum, s) => sum + Number(s.priceAtBooking), 0);
+                      return (
+                        <label key={a.id} className="flex items-start gap-2 text-sm">
+                          <input type="checkbox" checked={selectedAppointmentIds.includes(a.id)} onChange={() => toggleAppointment(a.id)} className="mt-0.5" />
+                          <span>
+                            <span className="font-medium text-neutral-700">
+                              {a.client.firstName} {a.client.lastName}
+                            </span>{' '}
+                            <span className="text-neutral-400">
+                              — {a.startDatetime.slice(0, 10)} {a.startDatetime.slice(11, 16)}hs — {a.services.map((s) => s.service.name).join(', ')} — $
+                              {monto.toLocaleString('es-AR')}
+                            </span>
+                          </span>
+                        </label>
+                      );
+                    })}
+                    {appointments.length === 0 && <p className="text-sm text-neutral-400">No hay turnos en ese rango de fechas.</p>}
+                  </div>
+                  <p className="text-xs text-neutral-400">{selectedAppointmentIds.length} turno(s) seleccionado(s)</p>
+                </>
+              )}
             </div>
 
             {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
@@ -271,6 +355,25 @@ export default function CampaignsTab() {
                 Crear campaña
               </button>
             </div>
+        </Modal>
+      )}
+
+      {deletingCampaignId && (
+        <Modal open onClose={() => setDeletingCampaignId(null)} title="🗑️ Borrar campaña" maxWidth="sm">
+          <p className="text-sm text-neutral-600">
+            ¿Borrar esta campaña? Esto no cancela mensajes ya enviados por WhatsApp, solo borra el registro.
+          </p>
+          <div className="mt-5 flex justify-end gap-2">
+            <button onClick={() => setDeletingCampaignId(null)} className="btn-ghost">
+              Cancelar
+            </button>
+            <button
+              onClick={confirmDelete}
+              className="rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white shadow-xs transition-all hover:bg-red-700 active:scale-95"
+            >
+              Sí, borrar
+            </button>
+          </div>
         </Modal>
       )}
     </div>

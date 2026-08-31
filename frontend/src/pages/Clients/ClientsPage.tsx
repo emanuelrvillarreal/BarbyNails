@@ -64,7 +64,7 @@ export default function ClientsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-pink-50/40 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-pink-50/40 p-3 sm:p-6">
       <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold text-neutral-800">Clientas</h1>
@@ -79,7 +79,7 @@ export default function ClientsPage() {
       </header>
 
       {/* Pestañas Principales: Activas vs Lista Negra */}
-      <div className="mb-4 flex border-b border-neutral-200 gap-2">
+      <div className="mb-4 flex gap-2 overflow-x-auto border-b border-neutral-200">
         <button
           onClick={() => setMainTab('active')}
           className={`pb-2.5 px-4 text-sm font-bold border-b-2 transition-colors ${
@@ -101,6 +101,19 @@ export default function ClientsPage() {
           <span>🚫 Lista Negra (Blacklist)</span>
         </button>
       </div>
+
+      {mainTab === 'active' && (
+        <p className="mb-4 flex flex-wrap items-center gap-x-1.5 gap-y-1 rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs text-neutral-500">
+          <span className="inline-flex items-center gap-1 font-semibold text-emerald-600">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Activa
+          </span>
+          <span>= tuvo un turno en los últimos 3 meses.</span>
+          <span className="inline-flex items-center gap-1 font-semibold text-violet-600">
+            <span className="h-1.5 w-1.5 rounded-full bg-violet-500" /> Inactiva
+          </span>
+          <span>= sin turnos hace más de 3 meses — ahí aparece el botón "Enviar promo" para reengancharla por WhatsApp.</span>
+        </p>
+      )}
 
       <div className="mb-4 flex flex-wrap gap-2">
         <input
@@ -127,106 +140,81 @@ export default function ClientsPage() {
 
       {loading && <p className="mb-2 text-sm text-neutral-400">Cargando clientas...</p>}
 
-      <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-xs">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-neutral-50 text-neutral-500">
-            <tr>
-              <th className="px-4 py-2 font-medium">Nombre</th>
-              <th className="px-4 py-2 font-medium">Teléfono</th>
-              <th className="px-4 py-2 font-medium">🎂 Nacimiento</th>
-              <th className="px-4 py-2 font-medium">Edad</th>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {clients.map((c) => (
+          <div key={c.id} className="rounded-xl border border-neutral-200 bg-white p-3.5 shadow-xs">
+            <div className="flex items-start justify-between gap-2">
+              <button onClick={() => setDetailClientId(c.id)} className="text-left font-semibold text-neutral-800">
+                {c.firstName} {c.lastName}
+              </button>
+              {mainTab === 'active' ? (
+                <span
+                  className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-3xs font-bold shadow-2xs ${
+                    c.status === 'ACTIVA' ? 'bg-emerald-500 text-white' : 'bg-violet-500 text-white'
+                  }`}
+                >
+                  <span className="h-1.5 w-1.5 rounded-full bg-white/80" />
+                  {c.status === 'ACTIVA' ? 'Activa' : 'Inactiva'}
+                </span>
+              ) : (
+                <span className="shrink-0 rounded-full bg-red-100 px-2.5 py-1 text-3xs font-bold text-red-700">🚫 Lista Negra</span>
+              )}
+            </div>
+
+            <div className="mt-1.5 space-y-0.5 text-xs text-neutral-500">
+              <div>📞 {c.phone}</div>
+              {c.birthday && (
+                <div>
+                  🎂 {c.birthday.slice(8, 10)}/{c.birthday.slice(5, 7)}/{c.birthday.slice(0, 4)} ({calculateAge(c.birthday)} años)
+                </div>
+              )}
               {mainTab === 'blacklist' ? (
                 <>
-                  <th className="px-4 py-2 font-medium">Fecha de Baja</th>
-                  <th className="px-4 py-2 font-medium">Motivo Lista Negra</th>
+                  <div>Baja: {c.blacklistedAt ? c.blacklistedAt.slice(0, 10) : '—'}</div>
+                  <div className="font-medium text-red-700">Motivo: {c.blacklistedReason || 'Sin motivo especificado'}</div>
                 </>
               ) : (
+                <div>Última visita: {c.lastVisit ? c.lastVisit.slice(0, 10) : '—'}</div>
+              )}
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-1.5 border-t border-neutral-100 pt-2.5">
+              <button onClick={() => setDetailClientId(c.id)} className="rounded-lg bg-pink-50 px-2.5 py-1 text-xs font-semibold text-pink-700 hover:bg-pink-100 transition-colors">
+                🔍 Historial
+              </button>
+              {mainTab === 'blacklist' ? (
+                <button
+                  onClick={() => handleUnblacklist(c)}
+                  className="rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-colors"
+                >
+                  🔄 Quitar de Lista Negra
+                </button>
+              ) : (
                 <>
-                  <th className="px-4 py-2 font-medium">Última visita</th>
-                  <th className="px-4 py-2 font-medium">Estado</th>
+                  {c.status === 'INACTIVA' && (
+                    <button onClick={() => sendPromo(c)} className="rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-colors">
+                      Enviar promo
+                    </button>
+                  )}
+                  <button onClick={() => setFormClient(c)} className="rounded-lg bg-neutral-100 px-2.5 py-1 text-xs font-semibold text-neutral-600 hover:bg-neutral-200 transition-colors">
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => setBlacklistTarget(c)}
+                    className="rounded-lg bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700 hover:bg-red-100 border border-red-200 transition-colors"
+                  >
+                    🚫 Lista Negra
+                  </button>
                 </>
               )}
-              <th className="px-4 py-2 font-medium text-right">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {clients.map((c) => (
-              <tr key={c.id} className="border-t border-neutral-100 hover:bg-neutral-50/80 transition-colors">
-                <td className="cursor-pointer px-4 py-3 font-semibold text-neutral-800" onClick={() => setDetailClientId(c.id)}>
-                  {c.firstName} {c.lastName}
-                </td>
-                <td className="px-4 py-3 text-neutral-600">{c.phone}</td>
-                <td className="px-4 py-3 text-neutral-600">
-                  {c.birthday ? `${c.birthday.slice(8, 10)}/${c.birthday.slice(5, 7)}/${c.birthday.slice(0, 4)}` : <span className="text-neutral-300">—</span>}
-                </td>
-                <td className="px-4 py-3 text-neutral-600">
-                  {c.birthday ? `${calculateAge(c.birthday)} años` : <span className="text-neutral-300">—</span>}
-                </td>
-                {mainTab === 'blacklist' ? (
-                  <>
-                    <td className="px-4 py-3 text-neutral-600 text-xs font-mono">
-                      {c.blacklistedAt ? c.blacklistedAt.slice(0, 10) : '—'}
-                    </td>
-                    <td className="px-4 py-3 text-red-800 font-semibold text-xs">
-                      {c.blacklistedReason || 'Sin motivo especificado'}
-                    </td>
-                  </>
-                ) : (
-                  <>
-                    <td className="px-4 py-3 text-neutral-600 font-medium">{c.lastVisit ? c.lastVisit.slice(0, 10) : '—'}</td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold shadow-2xs ${
-                          c.status === 'ACTIVA' ? 'bg-emerald-500 text-white' : 'bg-violet-500 text-white'
-                        }`}
-                      >
-                        <span className="h-1.5 w-1.5 rounded-full bg-white/80" />
-                        {c.status === 'ACTIVA' ? 'Activa' : 'Inactiva'}
-                      </span>
-                    </td>
-                  </>
-                )}
-                <td className="space-x-2 px-4 py-3 text-right">
-                  <button onClick={() => setDetailClientId(c.id)} className="rounded-lg bg-pink-50 px-2.5 py-1 text-xs font-semibold text-pink-700 hover:bg-pink-100 transition-colors">
-                    🔍 Ver Historial
-                  </button>
-                  {mainTab === 'blacklist' ? (
-                    <button
-                      onClick={() => handleUnblacklist(c)}
-                      className="rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-colors"
-                    >
-                      🔄 Quitar de Lista Negra
-                    </button>
-                  ) : (
-                    <>
-                      {c.status === 'INACTIVA' && (
-                        <button onClick={() => sendPromo(c)} className="link-action-success">
-                          Enviar promo
-                        </button>
-                      )}
-                      <button onClick={() => setFormClient(c)} className="link-action">
-                        Editar
-                      </button>
-                      <button
-                        onClick={() => setBlacklistTarget(c)}
-                        className="rounded-lg bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700 hover:bg-red-100 border border-red-200 transition-colors"
-                      >
-                        🚫 Lista Negra
-                      </button>
-                    </>
-                  )}
-                </td>
-              </tr>
-            ))}
-            {clients.length === 0 && !loading && (
-              <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-neutral-400">
-                  {mainTab === 'blacklist' ? 'No hay clientas en la Lista Negra.' : 'No hay clientas para mostrar.'}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+            </div>
+          </div>
+        ))}
+        {clients.length === 0 && !loading && (
+          <p className="rounded-xl border border-dashed border-neutral-300 p-6 text-center text-sm text-neutral-400">
+            {mainTab === 'blacklist' ? 'No hay clientas en la Lista Negra.' : 'No hay clientas para mostrar.'}
+          </p>
+        )}
       </div>
 
       {formClient && (

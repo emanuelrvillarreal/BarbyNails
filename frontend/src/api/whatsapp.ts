@@ -75,12 +75,20 @@ export function fetchCampaigns(type?: WhatsappCampaignType) {
   return apiFetch<WhatsappCampaign[]>(`/whatsapp/campaigns${qs}`);
 }
 
-export function createCampaign(input: { templateId: string; type: WhatsappCampaignType; clientIds: string[] }) {
+export function createCampaign(input: {
+  templateId: string;
+  type: WhatsappCampaignType;
+  recipients: { clientId: string; appointmentId?: string }[];
+}) {
   return apiFetch<WhatsappCampaign>('/whatsapp/campaigns', { method: 'POST', body: JSON.stringify(input) });
 }
 
 export function fetchCampaign(id: string) {
   return apiFetch<WhatsappCampaign>(`/whatsapp/campaigns/${id}`);
+}
+
+export function deleteCampaign(id: string) {
+  return apiFetch<void>(`/whatsapp/campaigns/${id}`, { method: 'DELETE' });
 }
 
 export function markRecipientSent(campaignId: string, recipientId: string) {

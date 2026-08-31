@@ -119,7 +119,7 @@ export default function AttendanceTab() {
         </button>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-xs">
+      <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white shadow-xs">
         <table className="w-full text-left text-sm">
           <thead className="bg-neutral-50 text-neutral-500 uppercase text-xs tracking-wider">
             <tr>

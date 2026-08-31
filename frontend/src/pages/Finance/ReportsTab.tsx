@@ -57,7 +57,7 @@ export default function ReportsTab() {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <div>
               <h3 className="mb-2 text-sm font-medium text-neutral-700">Por medio de pago</h3>
-              <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
+              <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white">
                 <table className="w-full text-left text-sm">
                   <thead className="bg-neutral-50 text-neutral-500">
                     <tr>
@@ -88,7 +88,7 @@ export default function ReportsTab() {
 
             <div>
               <h3 className="mb-2 text-sm font-medium text-neutral-700">Por profesional</h3>
-              <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
+              <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white">
                 <table className="w-full text-left text-sm">
                   <thead className="bg-neutral-50 text-neutral-500">
                     <tr>

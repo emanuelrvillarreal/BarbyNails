@@ -79,7 +79,7 @@ function AddTipModal({
             autoFocus
           />
         </label>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <label className="block text-sm font-medium text-neutral-700">
             Fecha
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2" />
@@ -325,7 +325,7 @@ export default function CommissionsTab() {
       )}
 
       <h3 className="mb-2 text-sm font-medium text-neutral-700">Liquidaciones generadas</h3>
-      <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
+      <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white">
         <table className="w-full text-left text-sm">
           <thead className="bg-neutral-50 text-neutral-500">
             <tr>

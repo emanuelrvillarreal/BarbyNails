@@ -17,7 +17,7 @@ export default function FinancePage() {
   const [tab, setTab] = useState<TabId>('movements');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-pink-50/40 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-pink-50/40 p-3 sm:p-6">
       <header className="mb-5 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-neutral-800">Finanzas</h1>
@@ -25,7 +25,7 @@ export default function FinancePage() {
         </div>
       </header>
 
-      <div className="mb-5 flex gap-1 border-b border-neutral-200">
+      <div className="mb-5 flex gap-1 overflow-x-auto border-b border-neutral-200">
         {TABS.map((t) => (
           <button
             key={t.id}

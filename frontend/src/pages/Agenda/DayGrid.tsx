@@ -83,11 +83,13 @@ export default function DayGrid({
 
   return (
     <div>
+      <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white">
       <div
-        className="grid overflow-hidden rounded-xl border border-neutral-200 bg-white text-sm"
+        className="grid text-sm"
         style={{
           gridTemplateColumns: `56px repeat(${professionals.length}, minmax(140px, 1fr))`,
           gridTemplateRows: `36px repeat(${slots.length}, ${ROW_HEIGHT}px)`,
+          minWidth: professionals.length > 2 ? `${56 + professionals.length * 140}px` : undefined,
         }}
       >
         <div className="border-b border-r border-neutral-200 bg-neutral-50" style={{ gridColumn: 1, gridRow: 1 }} />
@@ -224,15 +226,22 @@ export default function DayGrid({
           );
         })}
       </div>
+      </div>
 
       {cancelledAppointments.length > 0 && (
-        <div className="mt-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3 text-xs text-neutral-500">
-          <p className="mb-1 font-medium text-neutral-600">Cancelados hoy (el horario ya quedo libre en la grilla):</p>
-          <ul className="space-y-0.5">
+        <div className="mt-3 rounded-lg border border-red-300 bg-red-50 p-3 text-xs text-red-800">
+          <p className="mb-1.5 flex items-center gap-1.5 font-bold uppercase tracking-wider text-red-700">
+            <span>🚫 Cancelados hoy</span>
+            <span className="rounded-full bg-red-600 px-2 py-0.5 text-3xs font-bold text-white">{cancelledAppointments.length}</span>
+            <span className="font-normal normal-case tracking-normal text-red-500">(el horario ya quedó libre en la grilla)</span>
+          </p>
+          <ul className="space-y-1">
             {cancelledAppointments.map((appt) => (
-              <li key={appt.id}>
-                {appt.client.firstName} {appt.client.lastName} — {appt.professional.firstName} —{' '}
-                {appt.startDatetime.slice(11, 16)}hs
+              <li key={appt.id} className="flex items-center gap-1.5 font-semibold">
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-red-500" />
+                <span className="line-through decoration-red-400">
+                  {appt.client.firstName} {appt.client.lastName} — {appt.professional.firstName} — {appt.startDatetime.slice(11, 16)}hs
+                </span>
               </li>
             ))}
           </ul>

@@ -304,6 +304,7 @@ model Appointment {
   services         AppointmentService[]
   whatsappReminder WhatsappReminder?
   clientNotes      ClientNote[]
+  whatsappCampaignRecipients WhatsappCampaignRecipient[]
 
   @@index([professionalId, startDatetime])
   @@index([clientId])
@@ -380,11 +381,17 @@ model WhatsappCampaignRecipient {
   campaign   WhatsappCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   clientId   String   @map("client_id")
   client     Client   @relation(fields: [clientId], references: [id])
+  // Turno puntual al que refiere el envio - obligatorio para campañas de tipo
+  // PAYMENT_PENDING (asi la plantilla puede completar {monto}, {servicios},
+  // {fecha}, {hora}, {profesional}); queda vacio para PROMOTION.
+  appointmentId String? @map("appointment_id")
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
   sentAt     DateTime? @map("sent_at")
   status     WhatsappRecipientStatus @default(PENDING)
 
   @@index([campaignId])
   @@index([clientId])
+  @@index([appointmentId])
   @@map("whatsapp_campaign_recipients")
 }
 

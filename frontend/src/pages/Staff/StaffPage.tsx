@@ -13,13 +13,13 @@ export default function StaffPage() {
   const [tab, setTab] = useState<TabId>('personal');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-pink-50/40 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-pink-50/40 p-3 sm:p-6">
       <header className="mb-5">
         <h1 className="text-xl font-semibold text-neutral-800">Personal</h1>
         <p className="text-sm text-neutral-500">Profesionales, horarios y asistencia</p>
       </header>
 
-      <div className="mb-5 flex gap-1 border-b border-neutral-200">
+      <div className="mb-5 flex gap-1 overflow-x-auto border-b border-neutral-200">
         {TABS.map((t) => (
           <button
             key={t.id}

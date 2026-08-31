@@ -6,10 +6,11 @@ const WEEKDAY_LABELS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 interface MonthGridProps {
   monthDateKey: string;
   appointmentsByDate: Record<string, Appointment[]>;
+  birthdaysByDate?: Record<string, string[]>;
   onDayClick: (dateKey: string) => void;
 }
 
-export default function MonthGrid({ monthDateKey, appointmentsByDate, onDayClick }: MonthGridProps) {
+export default function MonthGrid({ monthDateKey, appointmentsByDate, birthdaysByDate, onDayClick }: MonthGridProps) {
   const weeks = getMonthMatrix(monthDateKey);
   const currentMonth = monthDateKey.slice(0, 7);
   const todayKey = today();
@@ -35,6 +36,7 @@ export default function MonthGrid({ monthDateKey, appointmentsByDate, onDayClick
           const appts = (appointmentsByDate[dateKey] ?? []).filter((a) => a.status !== 'CANCELLED');
           const pendingCount = appts.filter((a) => a.status === 'PENDING').length;
           const confirmedCount = appts.filter((a) => a.status === 'CONFIRMED').length;
+          const birthdayNames = birthdaysByDate?.[dateKey] ?? [];
 
           return (
             <button
@@ -56,6 +58,15 @@ export default function MonthGrid({ monthDateKey, appointmentsByDate, onDayClick
               >
                 {dayNumber}
               </span>
+
+              {inMonth && birthdayNames.length > 0 && (
+                <span
+                  className="rounded-full bg-gradient-to-r from-amber-300 to-yellow-400 px-1.5 py-0.5 text-[10px] font-bold text-amber-900 shadow-sm"
+                  title={birthdayNames.join(', ')}
+                >
+                  🎂 {birthdayNames.length === 1 ? birthdayNames[0].split(' ')[0] : `${birthdayNames.length} cumples`}
+                </span>
+              )}
 
               {inMonth && isClosedDay && <span className="text-[10px] text-neutral-300">Cerrado</span>}
 

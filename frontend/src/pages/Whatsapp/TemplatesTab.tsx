@@ -12,7 +12,7 @@ const TYPE_LABELS: Record<WhatsappTemplateType, string> = {
 
 const TYPE_PLACEHOLDERS: Record<WhatsappTemplateType, string> = {
   APPOINTMENT_REMINDER: '{nombre}, {fecha}, {hora}, {profesional}, {servicios}',
-  PAYMENT_PENDING: '{nombre}, {apellido}',
+  PAYMENT_PENDING: '{nombre}, {apellido}, {monto}, {servicios}, {fecha}, {hora}, {profesional}',
   PROMOTION: '{nombre}, {apellido}',
 };
 

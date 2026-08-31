@@ -117,7 +117,7 @@ export default function TransactionFormModal({ services, professionals, onClose,
         </div>
 
         <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="rounded-lg border border-neutral-300 px-3 py-2" />
             <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="rounded-lg border border-neutral-300 px-3 py-2" />
           </div>
@@ -203,7 +203,7 @@ export default function TransactionFormModal({ services, professionals, onClose,
             </>
           )}
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <label className="block text-sm font-medium text-neutral-700">
               Monto
               <input

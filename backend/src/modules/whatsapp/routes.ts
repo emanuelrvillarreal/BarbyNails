@@ -102,7 +102,9 @@ router.get('/campaigns', requireRole('OWNER'), async (req, res, next) => {
 const createCampaignSchema = z.object({
   templateId: z.string().uuid(),
   type: campaignTypeEnum,
-  clientIds: z.array(z.string().uuid()).min(1),
+  recipients: z
+    .array(z.object({ clientId: z.string().uuid(), appointmentId: z.string().uuid().optional() }))
+    .min(1),
 });
 
 router.post('/campaigns', requireRole('OWNER'), async (req, res, next) => {
@@ -117,6 +119,15 @@ router.post('/campaigns', requireRole('OWNER'), async (req, res, next) => {
 router.get('/campaigns/:id', requireRole('OWNER'), async (req, res, next) => {
   try {
     res.json(await whatsappService.getCampaign(req.params.id));
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete('/campaigns/:id', requireRole('OWNER'), async (req, res, next) => {
+  try {
+    await whatsappService.deleteCampaign(req.params.id);
+    res.status(204).end();
   } catch (err) {
     next(err);
   }

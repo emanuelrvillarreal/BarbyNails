@@ -139,14 +139,14 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-pink-50/40 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-pink-50/40 p-3 sm:p-6">
       <header className="mb-6">
         <h1 className="text-xl font-bold text-neutral-800">Configuración &amp; SysAdmin</h1>
         <p className="text-sm text-neutral-500">Personalización de marca, usuarios y control de accesos del sistema</p>
       </header>
 
       {/* Selector de Pestañas */}
-      <div className="mb-6 flex gap-2 border-b border-neutral-200">
+      <div className="mb-6 flex gap-2 overflow-x-auto border-b border-neutral-200">
         <button
           onClick={() => setTab('branding')}
           className={`pb-3 px-4 text-sm font-semibold transition-all border-b-2 ${
@@ -267,7 +267,7 @@ export default function SettingsPage() {
             </button>
           </div>
 
-          <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-xs">
+          <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white shadow-xs">
             <table className="w-full text-left text-sm">
               <thead className="bg-neutral-50 text-neutral-500 text-xs uppercase tracking-wider">
                 <tr>

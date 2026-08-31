@@ -41,7 +41,7 @@ export default function CatalogPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-pink-50/40 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-pink-50/40 p-3 sm:p-6">
       <header className="mb-5">
         <h1 className="text-xl font-semibold text-neutral-800">Catalogo</h1>
         <p className="text-sm text-neutral-500">Categorias, servicios, precios y duraciones</p>
@@ -101,7 +101,7 @@ export default function CatalogPage() {
             </button>
           </div>
 
-          <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
+          <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white">
             <table className="w-full text-left text-sm">
               <thead className="bg-neutral-50 text-neutral-500">
                 <tr>

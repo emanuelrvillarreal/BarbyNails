@@ -97,20 +97,47 @@ export async function updateReminderStatus(appointmentId: string, status: Whatsa
 
 // ---------- Campañas (pago pendiente / promociones) ----------
 
-export async function createCampaign(input: { templateId: string; type: WhatsappCampaignType; clientIds: string[]; createdByUserId: string }) {
+export async function createCampaign(input: {
+  templateId: string;
+  type: WhatsappCampaignType;
+  recipients: { clientId: string; appointmentId?: string }[];
+  createdByUserId: string;
+}) {
   const template = await prisma.whatsappMessageTemplate.findUnique({ where: { id: input.templateId } });
   if (!template) throw new AppError(404, 'Plantilla no encontrada');
-  if (input.clientIds.length === 0) throw new AppError(400, 'Elegi al menos una clienta');
+  if (input.recipients.length === 0) throw new AppError(400, 'Elegi al menos una clienta');
+
+  // Pago pendiente necesita un turno puntual para poder completar {monto},
+  // {servicios}, {fecha}, {hora} y {profesional} en la plantilla.
+  if (input.type === 'PAYMENT_PENDING') {
+    if (input.recipients.some((r) => !r.appointmentId)) {
+      throw new AppError(400, 'Para "Pago pendiente" tenes que elegir el turno correspondiente a cada clienta');
+    }
+    const appointments = await prisma.appointment.findMany({
+      where: { id: { in: input.recipients.map((r) => r.appointmentId!) } },
+    });
+    for (const r of input.recipients) {
+      const appt = appointments.find((a) => a.id === r.appointmentId);
+      if (!appt) throw new AppError(404, 'Uno de los turnos elegidos no existe');
+      if (appt.clientId !== r.clientId) throw new AppError(400, 'El turno elegido no corresponde a esa clienta');
+    }
+  }
 
   return prisma.whatsappCampaign.create({
     data: {
       templateId: input.templateId,
       type: input.type,
       createdByUserId: input.createdByUserId,
-      recipients: { create: input.clientIds.map((clientId) => ({ clientId })) },
+      recipients: { create: input.recipients.map((r) => ({ clientId: r.clientId, appointmentId: r.appointmentId })) },
     },
     include: { template: true, recipients: { include: { client: true } } },
   });
+}
+
+export async function deleteCampaign(id: string) {
+  const existing = await prisma.whatsappCampaign.findUnique({ where: { id } });
+  if (!existing) throw new AppError(404, 'Campaña no encontrada');
+  await prisma.whatsappCampaign.delete({ where: { id } });
 }
 
 export async function listCampaigns(type?: WhatsappCampaignType) {
@@ -124,17 +151,33 @@ export async function listCampaigns(type?: WhatsappCampaignType) {
 export async function getCampaign(id: string) {
   const campaign = await prisma.whatsappCampaign.findUnique({
     where: { id },
-    include: { template: true, recipients: { include: { client: true } } },
+    include: {
+      template: true,
+      recipients: {
+        include: {
+          client: true,
+          appointment: { include: { professional: true, services: { include: { service: true } } } },
+        },
+      },
+    },
   });
   if (!campaign) throw new AppError(404, 'Campaña no encontrada');
 
-  const recipientsWithMessage = campaign.recipients.map((r) => ({
-    ...r,
-    message: resolvePlaceholders(campaign.template.bodyText, {
+  const recipientsWithMessage = campaign.recipients.map((r) => {
+    const vars: Record<string, string> = {
       nombre: r.client.firstName,
       apellido: r.client.lastName,
-    }),
-  }));
+    };
+    if (r.appointment) {
+      const monto = r.appointment.services.reduce((sum, s) => sum + Number(s.priceAtBooking), 0);
+      vars.monto = monto.toLocaleString('es-AR');
+      vars.servicios = r.appointment.services.map((s) => s.service.name).join(', ');
+      vars.fecha = r.appointment.startDatetime.toISOString().slice(0, 10).split('-').reverse().join('/');
+      vars.hora = r.appointment.startDatetime.toISOString().slice(11, 16);
+      vars.profesional = r.appointment.professional.firstName;
+    }
+    return { ...r, message: resolvePlaceholders(campaign.template.bodyText, vars) };
+  });
 
   return { ...campaign, recipients: recipientsWithMessage };
 }
