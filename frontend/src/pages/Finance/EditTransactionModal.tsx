@@ -4,13 +4,7 @@ import type { PaymentMethod } from '../../api/types';
 import { ApiError } from '../../api/client';
 import { Modal } from '../../components/ui/dialog';
 import { Select, SelectItem } from '../../components/ui/select';
-
-const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
-  CASH: 'Efectivo',
-  TRANSFER: 'Transferencia',
-  MP_QR: 'Mercado Pago QR',
-  MP_POINT: 'Mercado Pago Point',
-};
+import { PAYMENT_METHOD_LABELS } from '../../constants/paymentMethods';
 
 interface Props {
   transaction: Transaction;

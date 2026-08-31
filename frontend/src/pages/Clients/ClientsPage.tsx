@@ -8,6 +8,17 @@ import BlacklistModal from './BlacklistModal';
 
 const DEFAULT_PROMO_MESSAGE = 'Hola! Desde Barby Nails & Spa te extrañamos. Tenemos promos esta semana, ¿te gustaria agendar un turno?';
 
+function calculateAge(birthday: string): number {
+  const birthDate = new Date(`${birthday.slice(0, 10)}T00:00:00.000Z`);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getUTCFullYear();
+  const hasHadBirthdayThisYear =
+    today.getMonth() + 1 > birthDate.getUTCMonth() + 1 ||
+    (today.getMonth() + 1 === birthDate.getUTCMonth() + 1 && today.getDate() >= birthDate.getUTCDate());
+  if (!hasHadBirthdayThisYear) age -= 1;
+  return age;
+}
+
 export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [services, setServices] = useState<Service[]>([]);
@@ -122,6 +133,8 @@ export default function ClientsPage() {
             <tr>
               <th className="px-4 py-2 font-medium">Nombre</th>
               <th className="px-4 py-2 font-medium">Teléfono</th>
+              <th className="px-4 py-2 font-medium">🎂 Nacimiento</th>
+              <th className="px-4 py-2 font-medium">Edad</th>
               {mainTab === 'blacklist' ? (
                 <>
                   <th className="px-4 py-2 font-medium">Fecha de Baja</th>
@@ -143,6 +156,12 @@ export default function ClientsPage() {
                   {c.firstName} {c.lastName}
                 </td>
                 <td className="px-4 py-3 text-neutral-600">{c.phone}</td>
+                <td className="px-4 py-3 text-neutral-600">
+                  {c.birthday ? `${c.birthday.slice(8, 10)}/${c.birthday.slice(5, 7)}/${c.birthday.slice(0, 4)}` : <span className="text-neutral-300">—</span>}
+                </td>
+                <td className="px-4 py-3 text-neutral-600">
+                  {c.birthday ? `${calculateAge(c.birthday)} años` : <span className="text-neutral-300">—</span>}
+                </td>
                 {mainTab === 'blacklist' ? (
                   <>
                     <td className="px-4 py-3 text-neutral-600 text-xs font-mono">
@@ -201,7 +220,7 @@ export default function ClientsPage() {
             ))}
             {clients.length === 0 && !loading && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-neutral-400">
+                <td colSpan={7} className="px-4 py-6 text-center text-neutral-400">
                   {mainTab === 'blacklist' ? 'No hay clientas en la Lista Negra.' : 'No hay clientas para mostrar.'}
                 </td>
               </tr>

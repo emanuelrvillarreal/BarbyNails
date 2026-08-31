@@ -20,13 +20,7 @@ import CommissionRatesMatrix from './CommissionRatesMatrix';
 import EditTransactionModal from './EditTransactionModal';
 import { Select, SelectItem } from '../../components/ui/select';
 import { Modal } from '../../components/ui/dialog';
-
-const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
-  CASH: 'Efectivo',
-  TRANSFER: 'Transferencia',
-  MP_QR: 'Mercado Pago QR',
-  MP_POINT: 'Mercado Pago Point',
-};
+import { PAYMENT_METHOD_LABELS } from '../../constants/paymentMethods';
 
 function AddTipModal({
   professionalId,

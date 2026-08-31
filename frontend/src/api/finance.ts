@@ -1,6 +1,21 @@
 import { apiFetch } from './client';
 import type { Client, PaymentMethod, Professional, Service, TransactionType } from './types';
 
+export interface PaymentMethodFee {
+  id: string;
+  paymentMethod: PaymentMethod;
+  feePct: string;
+  effectiveFrom: string;
+}
+
+export function fetchPaymentMethodFees() {
+  return apiFetch<PaymentMethodFee[]>('/finance/payment-method-fees');
+}
+
+export function setPaymentMethodFee(input: { paymentMethod: PaymentMethod; feePct: number; effectiveFrom: string }) {
+  return apiFetch<PaymentMethodFee>('/finance/payment-method-fees', { method: 'POST', body: JSON.stringify(input) });
+}
+
 export interface Transaction {
   id: string;
   type: TransactionType;

@@ -60,6 +60,8 @@ enum PaymentMethod {
   TRANSFER
   MP_QR
   MP_POINT
+  CREDIT_CARD
+  DEBIT_CARD
 }
 
 enum AttendanceStatus {

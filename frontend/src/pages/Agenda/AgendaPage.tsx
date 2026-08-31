@@ -244,6 +244,8 @@ export default function AgendaPage() {
         <AppointmentDetailModal
           appointment={detailAppointment}
           canEdit={isOwner || detailAppointment.professionalId === session?.professionalId}
+          isOwner={isOwner}
+          services={services}
           onClose={() => setDetailAppointment(null)}
           onUpdated={refresh}
         />

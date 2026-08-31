@@ -6,13 +6,7 @@ import TransactionFormModal from './TransactionFormModal';
 import EditTransactionModal from './EditTransactionModal';
 import { today, addDays } from '../Agenda/dateUtils';
 import StatCard from '../../components/StatCard';
-
-const PAYMENT_METHOD_LABELS: Record<string, string> = {
-  CASH: 'Efectivo',
-  TRANSFER: 'Transferencia',
-  MP_QR: 'MP QR',
-  MP_POINT: 'MP Point',
-};
+import { PAYMENT_METHOD_LABELS } from '../../constants/paymentMethods';
 
 export default function MovementsTab() {
   const [from, setFrom] = useState(addDays(today(), -7));

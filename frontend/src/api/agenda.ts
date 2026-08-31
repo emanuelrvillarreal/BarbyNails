@@ -1,5 +1,5 @@
 import { apiFetch } from './client';
-import type { Appointment, AppointmentServiceItem, AppointmentStatus, Client, GapsByDate, Service } from './types';
+import type { Appointment, AppointmentStatus, Client, GapsByDate, ServiceCategory } from './types';
 import type { ClientNote } from './clients';
 
 export function fetchAppointments(params: { from: Date; to: Date; professionalId?: string }) {
@@ -41,26 +41,29 @@ export function updateAppointmentStatus(id: string, status: AppointmentStatus, c
 
 export type MyClient = Client & { lastVisit: string; visitCount: number };
 
+// Version sin montos de plata: es lo unico que le corresponde ver a la
+// profesional (nunca precios/cobros), a diferencia del Appointment/Service
+// completos que usa la Agenda del lado OWNER.
+export interface MyClientAppointmentServiceItem {
+  id: string;
+  serviceId: string;
+  durationMinutesAtBooking: number;
+  bufferMinutesAtBooking: number;
+  service: { id: string; name: string; categoryId: string; category: ServiceCategory };
+}
+
 export interface MyClientAppointment {
   id: string;
   startDatetime: string;
   endDatetime: string;
   status: AppointmentStatus;
   cancelledReason: string | null;
-  services: AppointmentServiceItem[];
-}
-
-export interface MyClientTransactionService {
-  id: string;
-  priceAtTransaction: string;
-  service: Service;
-  transaction: { id: string; datetime: string; paymentMethod: string };
+  services: MyClientAppointmentServiceItem[];
 }
 
 export interface MyClientDetail {
   client: Client;
   appointments: MyClientAppointment[];
-  transactionServices: MyClientTransactionService[];
 }
 
 export function fetchMyClients() {

@@ -1,26 +1,30 @@
 import { useEffect, useState } from 'react';
-import type { Appointment, AppointmentStatus } from '../../api/types';
+import type { Appointment, AppointmentStatus, Service } from '../../api/types';
 import { updateAppointmentStatus, fetchAppointmentNotes, createAppointmentNote } from '../../api/agenda';
 import { previewReminder, markReminderSent } from '../../api/whatsapp';
 import { STATUS_STYLES } from './statusColors';
 import { ApiError } from '../../api/client';
 import type { ClientNote } from '../../api/clients';
 import ClientNotesSection from '../../components/ClientNotesSection';
+import ChargeAppointmentModal from './ChargeAppointmentModal';
 import { Modal } from '../../components/ui/dialog';
 
 interface Props {
   appointment: Appointment;
   canEdit: boolean;
+  isOwner: boolean;
+  services: Service[];
   onClose: () => void;
   onUpdated: () => void;
 }
 
-export default function AppointmentDetailModal({ appointment, canEdit, onClose, onUpdated }: Props) {
+export default function AppointmentDetailModal({ appointment, canEdit, isOwner, services, onClose, onUpdated }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notifying, setNotifying] = useState(false);
   const [notifiedAt, setNotifiedAt] = useState<string | null>(null);
   const [notes, setNotes] = useState<ClientNote[]>([]);
+  const [showCharge, setShowCharge] = useState(false);
 
   useEffect(() => {
     fetchAppointmentNotes(appointment.id).then(setNotes).catch(() => setNotes([]));
@@ -97,6 +101,12 @@ export default function AppointmentDetailModal({ appointment, canEdit, onClose, 
 
         {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
+        {isOwner && appointment.status !== 'CANCELLED' && (
+          <button onClick={() => setShowCharge(true)} className="btn-primary mt-4 w-full">
+            💳 Cobrar este turno
+          </button>
+        )}
+
         {appointment.status !== 'CANCELLED' && (
           <div className="mt-4">
             <button
@@ -118,15 +128,6 @@ export default function AppointmentDetailModal({ appointment, canEdit, onClose, 
                   ✓ Confirmar
                 </button>
               )}
-              {appointment.status !== 'IN_PROGRESS' && appointment.status !== 'COMPLETED' && (
-                <button
-                  onClick={() => changeStatus('IN_PROGRESS')}
-                  disabled={submitting}
-                  className="rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold py-2 px-3 text-xs flex-1 shadow-md transition-all active:scale-95"
-                >
-                  ▶ Iniciar Servicio
-                </button>
-              )}
               {appointment.status !== 'COMPLETED' && (
                 <button
                   onClick={() => changeStatus('COMPLETED')}
@@ -141,6 +142,18 @@ export default function AppointmentDetailModal({ appointment, canEdit, onClose, 
               Cancelar turno
             </button>
           </div>
+        )}
+
+        {showCharge && (
+          <ChargeAppointmentModal
+            appointment={appointment}
+            services={services}
+            onClose={() => setShowCharge(false)}
+            onCharged={() => {
+              setShowCharge(false);
+              onUpdated();
+            }}
+          />
         )}
     </Modal>
   );

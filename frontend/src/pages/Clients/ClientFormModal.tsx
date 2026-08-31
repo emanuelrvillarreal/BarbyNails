@@ -17,6 +17,7 @@ export default function ClientFormModal({ client, services, onClose, onSaved }: 
   const [phone, setPhone] = useState(client?.phone ?? '');
   const [email, setEmail] = useState(client?.email ?? '');
   const [address, setAddress] = useState(client?.address ?? '');
+  const [birthday, setBirthday] = useState(client?.birthday ? client.birthday.slice(0, 10) : '');
   const [internalNotes, setInternalNotes] = useState(client?.internalNotes ?? '');
   const [isSavedContact, setIsSavedContact] = useState(client?.isSavedContact ?? false);
   const [serviceInterestIds, setServiceInterestIds] = useState<string[]>([]);
@@ -41,6 +42,7 @@ export default function ClientFormModal({ client, services, onClose, onSaved }: 
         phone,
         email: email || undefined,
         address: address || undefined,
+        birthday: birthday || undefined,
         internalNotes: internalNotes || undefined,
         isSavedContact,
         serviceInterestIds,
@@ -93,6 +95,16 @@ export default function ClientFormModal({ client, services, onClose, onSaved }: 
             onChange={(e) => setAddress(e.target.value)}
             className="w-full rounded-lg border border-neutral-300 px-3 py-2"
           />
+
+          <label className="block text-sm text-neutral-600">
+            🎂 Fecha de cumpleaños (opcional)
+            <input
+              type="date"
+              value={birthday}
+              onChange={(e) => setBirthday(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2"
+            />
+          </label>
 
           <div>
             <label className="mb-1 flex items-center gap-1.5 text-sm font-medium text-amber-700">

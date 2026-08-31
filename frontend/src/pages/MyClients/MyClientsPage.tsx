@@ -38,6 +38,7 @@ export default function MyClientsPage() {
             <tr>
               <th className="px-4 py-2 font-medium">Nombre</th>
               <th className="px-4 py-2 font-medium">Teléfono</th>
+              <th className="px-4 py-2 font-medium">🎂 Cumpleaños</th>
               <th className="px-4 py-2 font-medium">Última vez con vos</th>
               <th className="px-4 py-2 font-medium">Turnos</th>
               <th className="px-4 py-2 font-medium"></th>
@@ -51,6 +52,9 @@ export default function MyClientsPage() {
                   {c.internalNotes && <span className="ml-1.5 text-amber-500" title="Tiene alergias / advertencias cargadas">⚠️</span>}
                 </td>
                 <td className="px-4 py-2 text-neutral-500">{c.phone}</td>
+                <td className="px-4 py-2 text-neutral-500">
+                  {c.birthday ? `${c.birthday.slice(8, 10)}/${c.birthday.slice(5, 7)}` : <span className="text-neutral-300">—</span>}
+                </td>
                 <td className="px-4 py-2 text-neutral-500">{c.lastVisit.slice(0, 10)}</td>
                 <td className="px-4 py-2 text-neutral-500">{c.visitCount}</td>
                 <td className="px-4 py-2 text-right">
@@ -62,7 +66,7 @@ export default function MyClientsPage() {
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-neutral-400">
+                <td colSpan={6} className="px-4 py-6 text-center text-neutral-400">
                   Todavía no tenés clientas con turnos registrados.
                 </td>
               </tr>

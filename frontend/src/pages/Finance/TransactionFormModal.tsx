@@ -6,6 +6,7 @@ import { ApiError } from '../../api/client';
 import { today } from '../Agenda/dateUtils';
 import { Modal } from '../../components/ui/dialog';
 import { Select, SelectItem } from '../../components/ui/select';
+import { PAYMENT_METHOD_LABELS } from '../../constants/paymentMethods';
 
 interface Props {
   services: Service[];
@@ -13,13 +14,6 @@ interface Props {
   onClose: () => void;
   onCreated: () => void;
 }
-
-const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
-  CASH: 'Efectivo',
-  TRANSFER: 'Transferencia',
-  MP_QR: 'Mercado Pago QR',
-  MP_POINT: 'Mercado Pago Point',
-};
 
 export default function TransactionFormModal({ services, professionals, onClose, onCreated }: Props) {
   const [type, setType] = useState<TransactionType>('INCOME');
@@ -67,7 +61,7 @@ export default function TransactionFormModal({ services, professionals, onClose,
     setSelectedServiceIds((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));
   }
 
-  const feeApplies = paymentMethod === 'MP_QR' || paymentMethod === 'MP_POINT';
+  const feeApplies = paymentMethod !== 'CASH' && paymentMethod !== 'TRANSFER';
 
   async function handleSubmit() {
     setError(null);

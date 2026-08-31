@@ -4,18 +4,12 @@ import type { Appointment, Client } from '../../api/types';
 import { STATUS_STYLES } from '../Agenda/statusColors';
 import ClientNotesSection from '../../components/ClientNotesSection';
 import { Modal } from '../../components/ui/dialog';
+import { PAYMENT_METHOD_LABELS } from '../../constants/paymentMethods';
 
 interface Props {
   clientId: string;
   onClose: () => void;
 }
-
-const PAYMENT_METHOD_LABELS: Record<string, string> = {
-  CASH: 'Efectivo',
-  TRANSFER: 'Transferencia',
-  MP_QR: 'Mercado Pago QR',
-  MP_POINT: 'Mercado Pago Point',
-};
 
 type ClientDetail = Client & { appointments: Appointment[]; payments: ClientPayment[] };
 
@@ -47,6 +41,7 @@ export default function ClientDetailModal({ clientId, onClose }: Props) {
       <div>{detail.firstName} {detail.lastName}</div>
       <p className="mt-0.5 text-xs font-normal text-neutral-500">
         📞 {detail.phone} {detail.email ? `• ✉️ ${detail.email}` : ''}
+        {detail.birthday ? ` • 🎂 ${detail.birthday.slice(8, 10)}/${detail.birthday.slice(5, 7)}/${detail.birthday.slice(0, 4)}` : ''}
       </p>
     </div>
   ) : (

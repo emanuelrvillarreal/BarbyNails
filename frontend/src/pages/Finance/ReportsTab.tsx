@@ -1,14 +1,9 @@
 import { useEffect, useState } from 'react';
 import { fetchReportSummary, type ReportSummary } from '../../api/finance';
+import type { PaymentMethod } from '../../api/types';
 import { today, addDays } from '../Agenda/dateUtils';
 import StatCard from '../../components/StatCard';
-
-const PAYMENT_METHOD_LABELS: Record<string, string> = {
-  CASH: 'Efectivo',
-  TRANSFER: 'Transferencia',
-  MP_QR: 'Mercado Pago QR',
-  MP_POINT: 'Mercado Pago Point',
-};
+import { PAYMENT_METHOD_LABELS } from '../../constants/paymentMethods';
 
 type Preset = 'week' | 'month' | 'custom';
 
@@ -74,7 +69,7 @@ export default function ReportsTab() {
                   <tbody>
                     {Object.entries(summary.byPaymentMethod).map(([method, v]) => (
                       <tr key={method} className="border-t border-neutral-100">
-                        <td className="px-4 py-2 text-neutral-700">{PAYMENT_METHOD_LABELS[method] ?? method}</td>
+                        <td className="px-4 py-2 text-neutral-700">{PAYMENT_METHOD_LABELS[method as PaymentMethod] ?? method}</td>
                         <td className="px-4 py-2 text-neutral-500">${v.gross.toLocaleString('es-AR')}</td>
                         <td className="px-4 py-2 text-neutral-500">${v.net.toLocaleString('es-AR')}</td>
                       </tr>

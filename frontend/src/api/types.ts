@@ -1,7 +1,7 @@
 export type Role = 'SYSADMIN' | 'OWNER' | 'PROFESSIONAL';
 export type AppointmentStatus = 'PENDING' | 'CONFIRMED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
 export type AttendanceStatus = 'PRESENT' | 'LATE' | 'EARLY_DEPARTURE' | 'ABSENT' | 'JUSTIFIED_ABSENCE';
-export type PaymentMethod = 'CASH' | 'TRANSFER' | 'MP_QR' | 'MP_POINT';
+export type PaymentMethod = 'CASH' | 'TRANSFER' | 'MP_QR' | 'MP_POINT' | 'CREDIT_CARD' | 'DEBIT_CARD';
 export type TransactionType = 'INCOME' | 'EXPENSE';
 
 export interface SystemSettings {
@@ -90,6 +90,7 @@ export interface Client {
   phone: string;
   email: string | null;
   address?: string | null;
+  birthday?: string | null;
   internalNotes?: string | null;
   status?: 'ACTIVA' | 'INACTIVA';
   lastVisit?: string | null;

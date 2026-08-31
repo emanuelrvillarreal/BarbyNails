@@ -6,9 +6,10 @@ import { fetchProfessionals } from '../../api/staff';
 import type { Professional, Role, UserAccount } from '../../api/types';
 import { Select, SelectItem } from '../../components/ui/select';
 import { Modal } from '../../components/ui/dialog';
+import PaymentMethodFeesSection from './PaymentMethodFeesSection';
 
 export default function SettingsPage() {
-  const [tab, setTab] = useState<'branding' | 'users'>('branding');
+  const [tab, setTab] = useState<'branding' | 'users' | 'payments'>('branding');
 
   // Branding State
   const [salonName, setSalonName] = useState('Barby Nails & Spa');
@@ -162,6 +163,14 @@ export default function SettingsPage() {
         >
           👥 Gestión de Usuarios ({users.length})
         </button>
+        <button
+          onClick={() => setTab('payments')}
+          className={`pb-3 px-4 text-sm font-semibold transition-all border-b-2 ${
+            tab === 'payments' ? 'border-pink-500 text-pink-700 font-bold' : 'border-transparent text-neutral-500 hover:text-neutral-700'
+          }`}
+        >
+          💳 Medios de Pago
+        </button>
       </div>
 
       {/* Pestaña Marca & Logo */}
@@ -235,6 +244,13 @@ export default function SettingsPage() {
               {savingSettings ? 'Guardando...' : 'Guardar Cambios de Marca'}
             </button>
           </form>
+        </div>
+      )}
+
+      {/* Pestaña Medios de Pago */}
+      {tab === 'payments' && (
+        <div className="max-w-2xl">
+          <PaymentMethodFeesSection />
         </div>
       )}
 

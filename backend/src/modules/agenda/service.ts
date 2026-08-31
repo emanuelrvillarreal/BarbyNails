@@ -140,6 +140,9 @@ export async function listMyClients(professionalId: string) {
 // Devuelve null tanto si la clienta no existe como si nunca tuvo turno con
 // esta profesional, para no filtrar por error si una clienta existe en el
 // sistema pero no es "suya".
+// Nunca incluye montos de plata (precios, cobros): a la profesional solo le
+// corresponde ver los datos de contacto/alergias e historial de turnos de
+// SUS clientas, no informacion financiera - eso es exclusivo de OWNER.
 export async function getMyClientDetail(professionalId: string, clientId: string) {
   const hasRelation = await prisma.appointment.findFirst({ where: { professionalId, clientId } });
   if (!hasRelation) return null;
@@ -150,16 +153,25 @@ export async function getMyClientDetail(professionalId: string, clientId: string
   const appointments = await prisma.appointment.findMany({
     where: { professionalId, clientId },
     orderBy: { startDatetime: 'desc' },
-    include: { services: { include: { service: true } } },
+    select: {
+      id: true,
+      startDatetime: true,
+      endDatetime: true,
+      status: true,
+      cancelledReason: true,
+      services: {
+        select: {
+          id: true,
+          serviceId: true,
+          durationMinutesAtBooking: true,
+          bufferMinutesAtBooking: true,
+          service: { select: { id: true, name: true, categoryId: true, category: true } },
+        },
+      },
+    },
   });
 
-  const transactionServices = await prisma.transactionService.findMany({
-    where: { professionalId, transaction: { clientId } },
-    include: { service: true, transaction: true },
-    orderBy: { transaction: { datetime: 'desc' } },
-  });
-
-  return { client, appointments, transactionServices };
+  return { client, appointments };
 }
 
 // Un "hueco" es cualquier franja de 30 min dentro del horario configurado de la

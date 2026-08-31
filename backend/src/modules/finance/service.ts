@@ -2,9 +2,10 @@ import { PaymentMethod, TransactionType } from '@prisma/client';
 import { prisma } from '../../lib/prisma';
 import { AppError } from '../../lib/errors';
 
+// Cualquier medio de pago puede tener comision configurada (no solo Mercado
+// Pago) - queda 100% a criterio de la dueña desde Configuracion. Si nunca se
+// cargo un % para ese medio, se asume 0.
 async function getFeePctForMethod(paymentMethod: PaymentMethod, date: Date): Promise<number> {
-  if (paymentMethod !== 'MP_QR' && paymentMethod !== 'MP_POINT') return 0;
-
   const fee = await prisma.paymentMethodFee.findFirst({
     where: { paymentMethod, effectiveFrom: { lte: date } },
     orderBy: { effectiveFrom: 'desc' },
@@ -18,9 +19,6 @@ export async function listPaymentMethodFees() {
 }
 
 export async function setPaymentMethodFee(input: { paymentMethod: PaymentMethod; feePct: number; effectiveFrom: Date }) {
-  if (input.paymentMethod !== 'MP_QR' && input.paymentMethod !== 'MP_POINT') {
-    throw new AppError(400, 'La comision solo aplica a Mercado Pago QR o Point');
-  }
   return prisma.paymentMethodFee.create({ data: input });
 }
 

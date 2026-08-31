@@ -111,10 +111,12 @@ export default function DayGrid({
         {slots.map((minutes, rowIdx) => (
           <div
             key={`label-${minutes}`}
-            className="border-b border-r border-neutral-200 px-1 text-right text-[11px] text-neutral-400"
+            className={`border-b border-r border-neutral-200 px-1 text-right text-[11px] ${
+              minutes % 60 === 0 ? 'font-semibold text-neutral-500' : 'text-neutral-400'
+            }`}
             style={{ gridColumn: 1, gridRow: rowIdx + 2 }}
           >
-            {minutes % 60 === 0 ? `${String(Math.floor(minutes / 60)).padStart(2, '0')}:00` : ''}
+            {String(Math.floor(minutes / 60)).padStart(2, '0')}:{String(minutes % 60).padStart(2, '0')}
           </div>
         ))}
 
