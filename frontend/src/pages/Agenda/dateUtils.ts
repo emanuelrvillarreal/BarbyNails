@@ -28,11 +28,14 @@ export function addDays(dateKey: string, days: number): string {
 }
 
 // El salon atiende martes(2) a sabado(6). Devuelve los 5 dias de la semana
-// (que contiene dateKey) en ese rango.
+// (que contiene dateKey) en ese rango. Si dateKey cae domingo o lunes (el
+// salon esta cerrado), muestra la semana que viene en vez de la que ya
+// termino - un domingo/lunes no "pertenece" a ninguna semana de atencion
+// todavia transcurrida, asi que lo logico es ir para adelante.
 export function getWeekDays(dateKey: string): string[] {
   const dow = parseDateKey(dateKey).getUTCDay();
-  const diffToTuesday = (dow - 2 + 7) % 7;
-  const tuesday = addDays(dateKey, -diffToTuesday);
+  const offsetToTuesday = dow === 0 ? 2 : dow === 1 ? 1 : -(dow - 2);
+  const tuesday = addDays(dateKey, offsetToTuesday);
   return [0, 1, 2, 3, 4].map((i) => addDays(tuesday, i));
 }
 

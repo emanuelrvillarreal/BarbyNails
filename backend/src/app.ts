@@ -1,5 +1,6 @@
 import express, { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import { ZodError } from 'zod';
 import { AppError } from './lib/errors';
 import authRoutes from './modules/auth/routes';
@@ -15,6 +16,11 @@ import usersRoutes from './modules/users/routes';
 
 export const app = express();
 
+// Render (y el proxy de Vercel por delante) reenvian el pedido con X-Forwarded-For;
+// sin esto, express-rate-limit ve la IP del proxy en vez de la del usuario real.
+app.set('trust proxy', 1);
+
+app.use(helmet());
 app.use(cors());
 // El limite por defecto de express.json() es 100kb, insuficiente para el logo
 // del salon (se guarda como data URL base64 en SystemSettings.logoUrl).
