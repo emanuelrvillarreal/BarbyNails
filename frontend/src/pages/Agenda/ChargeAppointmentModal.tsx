@@ -17,12 +17,15 @@ export default function ChargeAppointmentModal({ appointment, services, onClose,
   const bookedServiceIds = appointment.services.map((s) => s.serviceId);
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>(bookedServiceIds);
   const [editingServices, setEditingServices] = useState(false);
-  const [amount, setAmount] = useState(appointment.services.reduce((sum, s) => sum + Number(s.priceAtBooking), 0));
+  const [amountInput, setAmountInput] = useState(String(appointment.services.reduce((sum, s) => sum + Number(s.priceAtBooking), 0)));
   const [amountTouched, setAmountTouched] = useState(false);
-  const [tipAmount, setTipAmount] = useState(0);
+  const [tipAmountInput, setTipAmountInput] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CASH');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const amount = amountInput === '' ? 0 : Number(amountInput);
+  const tipAmount = tipAmountInput === '' ? 0 : Number(tipAmountInput);
 
   const selectedServices = services.filter((s) => selectedServiceIds.includes(s.id));
   const suggestedAmount = selectedServices.reduce((sum, s) => sum + Number(s.price), 0);
@@ -32,7 +35,7 @@ export default function ChargeAppointmentModal({ appointment, services, onClose,
       const next = prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id];
       if (!amountTouched) {
         const total = services.filter((s) => next.includes(s.id)).reduce((sum, s) => sum + Number(s.price), 0);
-        setAmount(total);
+        setAmountInput(String(total));
       }
       return next;
     });
@@ -126,18 +129,19 @@ export default function ChargeAppointmentModal({ appointment, services, onClose,
             <input
               type="number"
               min={0}
-              value={amount}
+              value={amountInput}
               onChange={(e) => {
-                setAmount(Number(e.target.value));
+                setAmountInput(e.target.value);
                 setAmountTouched(true);
               }}
+              placeholder="0"
               className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2"
             />
             {amountTouched && amount !== suggestedAmount && (
               <button
                 type="button"
                 onClick={() => {
-                  setAmount(suggestedAmount);
+                  setAmountInput(String(suggestedAmount));
                   setAmountTouched(false);
                 }}
                 className="mt-0.5 text-3xs font-medium text-pink-600 hover:underline"
@@ -151,8 +155,8 @@ export default function ChargeAppointmentModal({ appointment, services, onClose,
             <input
               type="number"
               min={0}
-              value={tipAmount}
-              onChange={(e) => setTipAmount(Number(e.target.value))}
+              value={tipAmountInput}
+              onChange={(e) => setTipAmountInput(e.target.value)}
               placeholder="0"
               className="mt-1 w-full rounded-lg border border-amber-200 bg-amber-50/50 px-3 py-2 focus:border-amber-400"
             />

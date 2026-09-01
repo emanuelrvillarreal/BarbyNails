@@ -14,11 +14,14 @@ interface Props {
 
 export default function EditTransactionModal({ transaction, onClose, onSaved }: Props) {
   const [concept, setConcept] = useState(transaction.concept);
-  const [amount, setAmount] = useState(Number(transaction.amount));
-  const [tipAmount, setTipAmount] = useState(Number(transaction.tipAmount));
+  const [amountInput, setAmountInput] = useState(String(Number(transaction.amount)));
+  const [tipAmountInput, setTipAmountInput] = useState(String(Number(transaction.tipAmount)));
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(transaction.paymentMethod);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const amount = amountInput === '' ? 0 : Number(amountInput);
+  const tipAmount = tipAmountInput === '' ? 0 : Number(tipAmountInput);
 
   async function handleSubmit() {
     setError(null);
@@ -59,8 +62,9 @@ export default function EditTransactionModal({ transaction, onClose, onSaved }: 
             <input
               type="number"
               min={0}
-              value={amount}
-              onChange={(e) => setAmount(Number(e.target.value))}
+              value={amountInput}
+              onChange={(e) => setAmountInput(e.target.value)}
+              placeholder="0"
               className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2"
             />
           </label>
@@ -69,8 +73,9 @@ export default function EditTransactionModal({ transaction, onClose, onSaved }: 
             <input
               type="number"
               min={0}
-              value={tipAmount}
-              onChange={(e) => setTipAmount(Number(e.target.value))}
+              value={tipAmountInput}
+              onChange={(e) => setTipAmountInput(e.target.value)}
+              placeholder="0"
               className="mt-1 w-full rounded-lg border border-amber-200 bg-amber-50/50 px-3 py-2 focus:border-amber-400"
             />
           </label>

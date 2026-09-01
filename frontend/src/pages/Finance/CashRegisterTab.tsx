@@ -14,7 +14,7 @@ import StatCard from '../../components/StatCard';
 export default function CashRegisterTab() {
   const [date, setDate] = useState(today());
   const [summary, setSummary] = useState<CashRegisterSummary | null>(null);
-  const [openingInput, setOpeningInput] = useState(0);
+  const [openingInputStr, setOpeningInputStr] = useState('');
   const [history, setHistory] = useState<CashRegisterRecord[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -33,7 +33,7 @@ export default function CashRegisterTab() {
     setError(null);
     setSubmitting(true);
     try {
-      await openCashRegister(date, openingInput);
+      await openCashRegister(date, openingInputStr === '' ? 0 : Number(openingInputStr));
       load();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'No se pudo abrir la caja');
@@ -82,8 +82,8 @@ export default function CashRegisterTab() {
             <div className="flex items-center gap-2">
               <input
                 type="number"
-                value={openingInput}
-                onChange={(e) => setOpeningInput(Number(e.target.value))}
+                value={openingInputStr}
+                onChange={(e) => setOpeningInputStr(e.target.value)}
                 placeholder="Monto de apertura"
                 className="w-40 rounded-lg border border-neutral-300 px-3 py-2 text-sm"
               />

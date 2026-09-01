@@ -17,9 +17,9 @@ interface Props {
 
 export default function TransactionFormModal({ services, professionals, onClose, onCreated }: Props) {
   const [type, setType] = useState<TransactionType>('INCOME');
-  const [amount, setAmount] = useState(0);
+  const [amountInput, setAmountInput] = useState('');
   const [amountTouched, setAmountTouched] = useState(false);
-  const [tipAmount, setTipAmount] = useState(0);
+  const [tipAmountInput, setTipAmountInput] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CASH');
   const [concept, setConcept] = useState('');
   const [date, setDate] = useState(today());
@@ -46,13 +46,16 @@ export default function TransactionFormModal({ services, professionals, onClose,
     return () => clearTimeout(timeout);
   }, [clientSearch]);
 
+  const amount = amountInput === '' ? 0 : Number(amountInput);
+  const tipAmount = tipAmountInput === '' ? 0 : Number(tipAmountInput);
+
   const suggestedAmount = services
     .filter((s) => selectedServiceIds.includes(s.id))
     .reduce((sum, s) => sum + Number(s.price), 0);
 
   useEffect(() => {
     if (type === 'INCOME' && !amountTouched && selectedServiceIds.length > 0) {
-      setAmount(suggestedAmount);
+      setAmountInput(String(suggestedAmount));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedServiceIds, type]);
@@ -208,11 +211,12 @@ export default function TransactionFormModal({ services, professionals, onClose,
               Monto
               <input
                 type="number"
-                value={amount}
+                value={amountInput}
                 onChange={(e) => {
-                  setAmount(Number(e.target.value));
+                  setAmountInput(e.target.value);
                   setAmountTouched(true);
                 }}
+                placeholder="0"
                 className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2"
               />
             </label>
@@ -223,8 +227,8 @@ export default function TransactionFormModal({ services, professionals, onClose,
                 <input
                   type="number"
                   min={0}
-                  value={tipAmount}
-                  onChange={(e) => setTipAmount(Number(e.target.value))}
+                  value={tipAmountInput}
+                  onChange={(e) => setTipAmountInput(e.target.value)}
                   placeholder="0"
                   className="mt-1 w-full rounded-lg border border-amber-200 bg-amber-50/50 px-3 py-2 focus:border-amber-400"
                 />

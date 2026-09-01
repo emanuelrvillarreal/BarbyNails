@@ -15,11 +15,15 @@ interface Props {
 export default function ServiceFormModal({ service, categories, onClose, onSaved }: Props) {
   const [name, setName] = useState(service?.name ?? '');
   const [categoryId, setCategoryId] = useState(service?.categoryId ?? categories[0]?.id ?? '');
-  const [price, setPrice] = useState(service ? Number(service.price) : 0);
-  const [durationMinutes, setDurationMinutes] = useState(service?.durationMinutes ?? 30);
-  const [bufferMinutes, setBufferMinutes] = useState(service?.bufferMinutes ?? 0);
+  const [priceInput, setPriceInput] = useState(service ? String(Number(service.price)) : '');
+  const [durationInput, setDurationInput] = useState(String(service?.durationMinutes ?? 30));
+  const [bufferInput, setBufferInput] = useState(service ? String(service.bufferMinutes) : '');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const price = priceInput === '' ? 0 : Number(priceInput);
+  const durationMinutes = durationInput === '' ? 0 : Number(durationInput);
+  const bufferMinutes = bufferInput === '' ? 0 : Number(bufferInput);
 
   async function handleSubmit() {
     setError(null);
@@ -77,8 +81,9 @@ export default function ServiceFormModal({ service, categories, onClose, onSaved
             Precio
             <input
               type="number"
-              value={price}
-              onChange={(e) => setPrice(Number(e.target.value))}
+              value={priceInput}
+              onChange={(e) => setPriceInput(e.target.value)}
+              placeholder="0"
               className="mt-1 w-full rounded-xl border-2 border-neutral-200 px-2 py-2 text-sm outline-none focus:border-pink-400"
             />
           </label>
@@ -86,8 +91,9 @@ export default function ServiceFormModal({ service, categories, onClose, onSaved
             Duracion (min)
             <input
               type="number"
-              value={durationMinutes}
-              onChange={(e) => setDurationMinutes(Number(e.target.value))}
+              value={durationInput}
+              onChange={(e) => setDurationInput(e.target.value)}
+              placeholder="0"
               className="mt-1 w-full rounded-xl border-2 border-neutral-200 px-2 py-2 text-sm outline-none focus:border-pink-400"
             />
           </label>
@@ -95,8 +101,9 @@ export default function ServiceFormModal({ service, categories, onClose, onSaved
             Buffer (min)
             <input
               type="number"
-              value={bufferMinutes}
-              onChange={(e) => setBufferMinutes(Number(e.target.value))}
+              value={bufferInput}
+              onChange={(e) => setBufferInput(e.target.value)}
+              placeholder="0"
               className="mt-1 w-full rounded-xl border-2 border-neutral-200 px-2 py-2 text-sm outline-none focus:border-pink-400"
             />
           </label>

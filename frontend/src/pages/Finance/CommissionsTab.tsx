@@ -33,11 +33,13 @@ function AddTipModal({
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const [amount, setAmount] = useState(0);
+  const [amountInput, setAmountInput] = useState('');
   const [date, setDate] = useState(today());
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CASH');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const amount = amountInput === '' ? 0 : Number(amountInput);
 
   async function handleSubmit() {
     setError(null);
@@ -73,8 +75,9 @@ function AddTipModal({
           <input
             type="number"
             min={0}
-            value={amount}
-            onChange={(e) => setAmount(Number(e.target.value))}
+            value={amountInput}
+            onChange={(e) => setAmountInput(e.target.value)}
+            placeholder="0"
             className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2"
             autoFocus
           />
