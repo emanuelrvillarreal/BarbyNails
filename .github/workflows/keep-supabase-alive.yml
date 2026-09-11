@@ -1,0 +1,19 @@
+name: Keep Supabase alive
+
+# Supabase pausa los proyectos free tras ~7 dias sin actividad. Este ping le
+# pega cada 3 dias a un endpoint publico que efectivamente consulta la base
+# (GET /api/settings hace un prisma.systemSettings.findUnique), asi Supabase
+# nunca ve 7 dias de silencio y el proyecto no se pausa solo.
+on:
+  schedule:
+    - cron: '0 12 */3 * *'
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping backend (touches the database)
+        run: |
+          curl -sf --max-time 30 https://barby-nails-backend.onrender.com/api/settings > /dev/null
+          echo "Ping OK"
