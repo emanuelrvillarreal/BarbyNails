@@ -64,7 +64,7 @@ export default function ClientsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-pink-50/40 p-3 sm:p-6">
+    <div className="app-bg min-h-screen p-3 sm:p-6">
       <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold text-neutral-800">Clientas</h1>
@@ -121,10 +121,10 @@ export default function ClientsPage() {
           placeholder="Buscar por nombre o teléfono..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 min-w-[200px] rounded-xl border-2 border-neutral-200 px-3 py-2 text-sm shadow-xs focus:border-pink-400 focus:outline-none"
+          className="flex-1 min-w-[200px] rounded-full border-2 border-fuchsia-200 bg-white px-4 py-2 text-sm shadow-xs focus:border-pink-400 focus:outline-none"
         />
         {mainTab === 'active' && (
-          <div className="flex overflow-hidden rounded-xl border-2 border-neutral-200 shadow-xs">
+          <div className="flex overflow-hidden rounded-full border-2 border-fuchsia-200 shadow-xs">
             {(['ALL', 'ACTIVA', 'INACTIVA'] as const).map((s) => (
               <button
                 key={s}
@@ -142,66 +142,99 @@ export default function ClientsPage() {
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {clients.map((c) => (
-          <div key={c.id} className="rounded-xl border border-neutral-200 bg-white p-3.5 shadow-xs">
-            <div className="flex items-start justify-between gap-2">
-              <button onClick={() => setDetailClientId(c.id)} className="text-left font-semibold text-neutral-800">
-                {c.firstName} {c.lastName}
-              </button>
+          <div key={c.id} className="card-pop relative overflow-hidden p-4 pt-5">
+            <div
+              className={`absolute inset-x-0 top-0 h-1.5 ${
+                mainTab === 'blacklist'
+                  ? 'bg-gradient-to-r from-red-500 to-rose-400'
+                  : c.status === 'ACTIVA'
+                    ? 'bg-gradient-to-r from-neon-500 to-emerald-400'
+                    : 'bg-gradient-to-r from-fuchsia-500 to-pink-500'
+              }`}
+            />
+
+            <div className="flex items-start gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-pink-500 to-fuchsia-500 font-display text-sm font-bold text-white shadow-md shadow-fuchsia-500/30 ring-2 ring-white">
+                {c.firstName.charAt(0).toUpperCase()}
+                {c.lastName.charAt(0).toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <button onClick={() => setDetailClientId(c.id)} className="block max-w-full truncate text-left font-display text-base font-bold text-neutral-800 hover:text-fuchsia-700">
+                  {c.firstName} {c.lastName}
+                </button>
+                <p className="text-xs text-neutral-500">📞 {c.phone}</p>
+              </div>
               {mainTab === 'active' ? (
                 <span
-                  className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-3xs font-bold shadow-2xs ${
-                    c.status === 'ACTIVA' ? 'bg-emerald-500 text-white' : 'bg-violet-500 text-white'
+                  className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-3xs font-bold ${
+                    c.status === 'ACTIVA'
+                      ? 'border-neon-500/50 bg-neon-500/15 text-emerald-700'
+                      : 'border-fuchsia-300 bg-fuchsia-100 text-fuchsia-700'
                   }`}
                 >
-                  <span className="h-1.5 w-1.5 rounded-full bg-white/80" />
+                  <span className={`h-1.5 w-1.5 rounded-full ${c.status === 'ACTIVA' ? 'bg-neon-600' : 'bg-fuchsia-500'}`} />
                   {c.status === 'ACTIVA' ? 'Activa' : 'Inactiva'}
                 </span>
               ) : (
-                <span className="shrink-0 rounded-full bg-red-100 px-2.5 py-1 text-3xs font-bold text-red-700">🚫 Lista Negra</span>
+                <span className="shrink-0 rounded-full border border-red-200 bg-red-100 px-2.5 py-1 text-3xs font-bold text-red-700">🚫 Lista Negra</span>
               )}
             </div>
 
-            <div className="mt-1.5 space-y-0.5 text-xs text-neutral-500">
-              <div>📞 {c.phone}</div>
+            <div className="mt-3 flex flex-wrap gap-1.5 text-xs">
               {c.birthday && (
-                <div>
-                  🎂 {c.birthday.slice(8, 10)}/{c.birthday.slice(5, 7)}/{c.birthday.slice(0, 4)} ({calculateAge(c.birthday)} años)
-                </div>
+                <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 font-medium text-amber-800">
+                  🎂 {c.birthday.slice(8, 10)}/{c.birthday.slice(5, 7)}/{c.birthday.slice(0, 4)} · {calculateAge(c.birthday)} años
+                </span>
               )}
               {mainTab === 'blacklist' ? (
                 <>
-                  <div>Baja: {c.blacklistedAt ? c.blacklistedAt.slice(0, 10) : '—'}</div>
-                  <div className="font-medium text-red-700">Motivo: {c.blacklistedReason || 'Sin motivo especificado'}</div>
+                  <span className="rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 font-medium text-neutral-600">
+                    Baja: {c.blacklistedAt ? c.blacklistedAt.slice(0, 10) : '—'}
+                  </span>
+                  <span className="rounded-full border border-red-200 bg-red-50 px-2.5 py-1 font-medium text-red-700">
+                    Motivo: {c.blacklistedReason || 'Sin motivo especificado'}
+                  </span>
                 </>
               ) : (
-                <div>Última visita: {c.lastVisit ? c.lastVisit.slice(0, 10) : '—'}</div>
+                <span className="rounded-full border border-fuchsia-100 bg-fuchsia-50 px-2.5 py-1 font-medium text-fuchsia-800">
+                  🗓️ Última visita: {c.lastVisit ? c.lastVisit.slice(0, 10) : '—'}
+                </span>
               )}
             </div>
 
-            <div className="mt-3 flex flex-wrap gap-1.5 border-t border-neutral-100 pt-2.5">
-              <button onClick={() => setDetailClientId(c.id)} className="rounded-lg bg-pink-50 px-2.5 py-1 text-xs font-semibold text-pink-700 hover:bg-pink-100 transition-colors">
+            <div className="mt-4 flex flex-wrap items-center gap-1.5 border-t border-fuchsia-100 pt-3">
+              <button
+                onClick={() => setDetailClientId(c.id)}
+                className="rounded-full bg-gradient-to-r from-pink-500 to-fuchsia-500 px-3.5 py-1.5 text-xs font-bold text-white shadow-md shadow-pink-500/25 transition-all hover:-translate-y-0.5 hover:shadow-lg"
+              >
                 🔍 Historial
               </button>
               {mainTab === 'blacklist' ? (
                 <button
                   onClick={() => handleUnblacklist(c)}
-                  className="rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-colors"
+                  className="rounded-full border border-neon-500/60 bg-neon-500/15 px-3.5 py-1.5 text-xs font-bold text-emerald-800 transition-colors hover:bg-neon-500/30"
                 >
                   🔄 Quitar de Lista Negra
                 </button>
               ) : (
                 <>
                   {c.status === 'INACTIVA' && (
-                    <button onClick={() => sendPromo(c)} className="rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-colors">
-                      Enviar promo
+                    <button
+                      onClick={() => sendPromo(c)}
+                      className="rounded-full bg-neon-500 px-3.5 py-1.5 text-xs font-bold text-ink shadow-md shadow-neon-500/40 transition-all hover:-translate-y-0.5 hover:bg-neon-400"
+                    >
+                      💬 Enviar promo
                     </button>
                   )}
-                  <button onClick={() => setFormClient(c)} className="rounded-lg bg-neutral-100 px-2.5 py-1 text-xs font-semibold text-neutral-600 hover:bg-neutral-200 transition-colors">
+                  <button
+                    onClick={() => setFormClient(c)}
+                    className="rounded-full border-2 border-fuchsia-200 bg-white px-3.5 py-1 text-xs font-semibold text-fuchsia-700 transition-colors hover:border-fuchsia-400 hover:bg-fuchsia-50"
+                  >
                     Editar
                   </button>
                   <button
                     onClick={() => setBlacklistTarget(c)}
-                    className="rounded-lg bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700 hover:bg-red-100 border border-red-200 transition-colors"
+                    className="ml-auto rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600 transition-colors hover:bg-red-100"
                   >
                     🚫 Lista Negra
                   </button>

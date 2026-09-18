@@ -30,12 +30,12 @@ export function Modal({ open, onClose, title, children, maxWidth = 'md' }: Modal
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs data-[state=open]:animate-in data-[state=open]:fade-in data-[state=closed]:animate-out data-[state=closed]:fade-out" />
         <DialogPrimitive.Content
           className={cn(
-            'fixed left-1/2 top-1/2 z-50 max-h-[90vh] w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl data-[state=open]:animate-in data-[state=open]:fade-in data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=closed]:zoom-out-95',
+            'fixed left-1/2 top-1/2 z-50 max-h-[90vh] w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-3xl border border-fuchsia-100 bg-white p-6 shadow-2xl shadow-fuchsia-500/20 data-[state=open]:animate-in data-[state=open]:fade-in data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=closed]:zoom-out-95',
             MAX_WIDTH[maxWidth],
           )}
         >
           <div className="mb-4 flex items-center justify-between border-b border-neutral-100 pb-3">
-            <DialogPrimitive.Title className="text-lg font-bold text-neutral-800">{title}</DialogPrimitive.Title>
+            <DialogPrimitive.Title className="font-display text-lg font-bold text-neutral-800">{title}</DialogPrimitive.Title>
             <DialogPrimitive.Close asChild>
               <button
                 type="button"

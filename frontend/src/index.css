@@ -1,64 +1,134 @@
 @import "tailwindcss";
 @plugin "tailwindcss-animate";
 
+/* Paleta y tipografia del sistema. Redefinir pink/fuchsia hace que todos los
+   degradados existentes (from-pink-500 to-fuchsia-500) pasen a magenta ->
+   violeta electrico sin tocar cada pantalla. "neon" es el acento turquesa. */
+@theme {
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Space Grotesk", "Inter", system-ui, sans-serif;
+
+  --color-pink-50: #fff0f8;
+  --color-pink-100: #ffe0f1;
+  --color-pink-200: #ffc2e3;
+  --color-pink-300: #ff94cd;
+  --color-pink-400: #ff5cb2;
+  --color-pink-500: #f0359a;
+  --color-pink-600: #d81b84;
+  --color-pink-700: #b5126c;
+  --color-pink-800: #940f5a;
+  --color-pink-900: #7a114d;
+
+  --color-fuchsia-50: #f5f0ff;
+  --color-fuchsia-100: #ebe0ff;
+  --color-fuchsia-200: #d9c4ff;
+  --color-fuchsia-300: #bf9bff;
+  --color-fuchsia-400: #a26fff;
+  --color-fuchsia-500: #7c4dff;
+  --color-fuchsia-600: #6a37f0;
+  --color-fuchsia-700: #5a2bd0;
+  --color-fuchsia-800: #4a25a8;
+  --color-fuchsia-900: #3d2185;
+
+  --color-neon-300: #8ff5ec;
+  --color-neon-400: #5cf0e3;
+  --color-neon-500: #2ee6d6;
+  --color-neon-600: #14c9ba;
+  --color-ink: #07070d;
+
+  --text-3xs: 0.6875rem;
+  --text-3xs--line-height: 1rem;
+}
+
+@layer base {
+  h1 {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 700;
+    background-image: linear-gradient(90deg, #14c9ba 0%, #7c4dff 45%, #f0359a 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    width: fit-content;
+  }
+}
+
+/* Fondo de las pantallas: claro, con "auroras" suaves de turquesa, violeta y
+   magenta en las esquinas para que se vea vivo sin oscurecer nada. */
+.app-bg,
+body {
+  background-color: #ffe9f4;
+  background-image:
+    radial-gradient(60rem 32rem at 100% -10%, rgb(46 230 214 / 0.22), transparent 60%),
+    radial-gradient(52rem 32rem at -10% 0%, rgb(124 77 255 / 0.18), transparent 60%),
+    radial-gradient(48rem 26rem at 50% 115%, rgb(240 53 154 / 0.14), transparent 60%);
+  background-attachment: fixed;
+}
+
 body {
   margin: 0;
 }
 
 @layer components {
-  /* Botones */
+  /* Botones (forma de pildora, como el estilo de referencia) */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-pink-500 to-fuchsia-500 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-pink-500/30 transition-all duration-150 hover:shadow-lg hover:shadow-pink-500/40 hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none disabled:hover:translate-y-0;
+    @apply inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-pink-500 to-fuchsia-500 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-pink-500/30 transition-all duration-150 hover:shadow-xl hover:shadow-fuchsia-500/40 hover:-translate-y-0.5 active:translate-y-0 active:shadow-md disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none disabled:hover:translate-y-0;
   }
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-xl border-2 border-neutral-200 bg-white px-4 py-2.5 text-sm font-semibold text-neutral-600 transition-all duration-150 hover:border-neutral-300 hover:bg-neutral-50 disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-1.5 rounded-full border-2 border-fuchsia-200 bg-white px-5 py-2.5 text-sm font-semibold text-fuchsia-700 transition-all duration-150 hover:border-fuchsia-400 hover:bg-fuchsia-50 disabled:opacity-50;
   }
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-semibold text-neutral-500 transition-colors duration-150 hover:bg-neutral-100 hover:text-neutral-700;
+    @apply inline-flex items-center justify-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-semibold text-neutral-500 transition-colors duration-150 hover:bg-fuchsia-50 hover:text-fuchsia-700;
   }
   .btn-success {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-emerald-500/30 transition-all duration-150 hover:shadow-lg hover:shadow-emerald-500/40 hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none;
+    @apply inline-flex items-center justify-center gap-1.5 rounded-full bg-neon-500 px-5 py-2.5 text-sm font-bold text-ink shadow-lg shadow-neon-500/40 transition-all duration-150 hover:bg-neon-400 hover:shadow-xl hover:shadow-neon-500/50 hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none;
   }
   .btn-danger {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-red-500 to-rose-500 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-red-500/30 transition-all duration-150 hover:shadow-lg hover:shadow-red-500/40 hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none;
+    @apply inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-red-500 to-rose-500 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-red-500/30 transition-all duration-150 hover:shadow-xl hover:shadow-red-500/40 hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none;
   }
   .btn-danger-soft {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-xl border-2 border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-600 transition-all duration-150 hover:border-red-300 hover:bg-red-100 disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-1.5 rounded-full border-2 border-red-200 bg-red-50 px-5 py-2.5 text-sm font-semibold text-red-600 transition-all duration-150 hover:border-red-300 hover:bg-red-100 disabled:opacity-50;
   }
 
   /* Links de accion chicos (Editar / Dar de baja / etc en tablas) */
   .link-action {
-    @apply text-xs font-semibold text-pink-600 transition-colors hover:text-pink-700 hover:underline;
+    @apply text-xs font-semibold text-fuchsia-600 transition-colors hover:text-pink-600 hover:underline;
   }
   .link-action-muted {
     @apply text-xs font-medium text-neutral-400 transition-colors hover:text-red-600;
   }
   .link-action-success {
-    @apply text-xs font-semibold text-emerald-600 transition-colors hover:text-emerald-700 hover:underline;
+    @apply text-xs font-semibold text-neon-600 transition-colors hover:text-emerald-700 hover:underline;
   }
 
   /* Tabs */
   .tab-item {
-    @apply relative px-4 py-2.5 text-sm font-semibold text-neutral-400 transition-colors duration-150 hover:text-neutral-600;
+    @apply relative px-4 py-2.5 font-display text-sm font-semibold text-neutral-400 transition-colors duration-150 hover:text-fuchsia-600;
   }
   .tab-item-active {
-    @apply relative px-4 py-2.5 text-sm font-semibold text-pink-600;
+    @apply relative px-4 py-2.5 font-display text-sm font-bold text-fuchsia-700;
   }
   .tab-item-active::after {
     content: "";
-    @apply absolute inset-x-3 -bottom-px h-0.5 rounded-full bg-gradient-to-r from-pink-500 to-fuchsia-500;
+    @apply absolute inset-x-3 -bottom-px h-[3px] rounded-full bg-gradient-to-r from-neon-500 via-fuchsia-500 to-pink-500 shadow-[0_0_10px_rgb(124_77_255/0.55)];
   }
 
   /* Segmented control (Dia/Semana, toggles de estado, etc) */
   .segment-active {
-    @apply bg-gradient-to-r from-pink-500 to-fuchsia-500 px-3 py-1.5 text-sm font-semibold text-white shadow-inner;
+    @apply bg-gradient-to-r from-pink-500 to-fuchsia-500 px-4 py-1.5 text-sm font-bold text-white shadow-inner;
   }
   .segment-inactive {
-    @apply bg-white px-3 py-1.5 text-sm font-medium text-neutral-500 transition-colors hover:bg-neutral-50;
+    @apply bg-white px-4 py-1.5 text-sm font-medium text-neutral-500 transition-colors hover:bg-fuchsia-50 hover:text-fuchsia-700;
   }
 
   /* Tarjetas de estadistica con acento de color */
   .stat-card {
     @apply relative overflow-hidden rounded-2xl border p-4 shadow-sm;
+  }
+
+  /* Tarjeta clickeable con levitacion y brillo al pasar el mouse */
+  .card-pop {
+    @apply rounded-2xl border border-fuchsia-100 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-fuchsia-300 hover:shadow-lg hover:shadow-fuchsia-500/15;
   }
 }

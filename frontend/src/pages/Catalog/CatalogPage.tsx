@@ -41,7 +41,7 @@ export default function CatalogPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-pink-50/40 p-3 sm:p-6">
+    <div className="app-bg min-h-screen p-3 sm:p-6">
       <header className="mb-5">
         <h1 className="text-xl font-semibold text-neutral-800">Catalogo</h1>
         <p className="text-sm text-neutral-500">Categorias, servicios, precios y duraciones</p>

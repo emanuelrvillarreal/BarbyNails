@@ -26,7 +26,7 @@ export default function ReportsTab() {
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <div className="flex overflow-hidden rounded-xl border-2 border-neutral-200 shadow-sm">
+        <div className="flex overflow-hidden rounded-full border-2 border-fuchsia-200 shadow-sm">
           {(['week', 'month', 'custom'] as const).map((p) => (
             <button
               key={p}

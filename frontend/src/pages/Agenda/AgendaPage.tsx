@@ -159,7 +159,7 @@ export default function AgendaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-pink-50/40 p-3 sm:p-6">
+    <div className="app-bg min-h-screen p-3 sm:p-6">
       <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold text-neutral-800">Agenda</h1>
@@ -168,7 +168,7 @@ export default function AgendaPage() {
 
         <div className="flex flex-wrap items-center gap-2">
           {!isOwner && <SelfAttendanceWidget />}
-          <div className="flex overflow-hidden rounded-xl border-2 border-neutral-200 shadow-sm">
+          <div className="flex overflow-hidden rounded-full border-2 border-fuchsia-200 shadow-sm">
             <button onClick={() => setViewMode('day')} className={viewMode === 'day' ? 'segment-active' : 'segment-inactive'}>
               Día
             </button>

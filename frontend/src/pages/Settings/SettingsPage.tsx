@@ -139,38 +139,34 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-pink-50/40 p-3 sm:p-6">
+    <div className="app-bg min-h-screen p-3 sm:p-6">
       <header className="mb-6">
         <h1 className="text-xl font-bold text-neutral-800">Configuración &amp; SysAdmin</h1>
         <p className="text-sm text-neutral-500">Personalización de marca, usuarios y control de accesos del sistema</p>
       </header>
 
       {/* Selector de Pestañas */}
-      <div className="mb-6 flex gap-2 overflow-x-auto border-b border-neutral-200">
+      <div className="mb-6 max-w-full overflow-x-auto pb-1">
+      <div className="inline-flex overflow-hidden rounded-full border-2 border-fuchsia-200 bg-white shadow-sm">
         <button
           onClick={() => setTab('branding')}
-          className={`pb-3 px-4 text-sm font-semibold transition-all border-b-2 ${
-            tab === 'branding' ? 'border-pink-500 text-pink-700 font-bold' : 'border-transparent text-neutral-500 hover:text-neutral-700'
-          }`}
+          className={tab === 'branding' ? 'segment-active whitespace-nowrap' : 'segment-inactive whitespace-nowrap'}
         >
           💅 Marca &amp; Logo del Salón
         </button>
         <button
           onClick={() => setTab('users')}
-          className={`pb-3 px-4 text-sm font-semibold transition-all border-b-2 ${
-            tab === 'users' ? 'border-pink-500 text-pink-700 font-bold' : 'border-transparent text-neutral-500 hover:text-neutral-700'
-          }`}
+          className={tab === 'users' ? 'segment-active whitespace-nowrap' : 'segment-inactive whitespace-nowrap'}
         >
           👥 Gestión de Usuarios ({users.length})
         </button>
         <button
           onClick={() => setTab('payments')}
-          className={`pb-3 px-4 text-sm font-semibold transition-all border-b-2 ${
-            tab === 'payments' ? 'border-pink-500 text-pink-700 font-bold' : 'border-transparent text-neutral-500 hover:text-neutral-700'
-          }`}
+          className={tab === 'payments' ? 'segment-active whitespace-nowrap' : 'segment-inactive whitespace-nowrap'}
         >
           💳 Medios de Pago
         </button>
+      </div>
       </div>
 
       {/* Pestaña Marca & Logo */}

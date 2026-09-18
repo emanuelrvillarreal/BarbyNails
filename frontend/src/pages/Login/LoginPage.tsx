@@ -52,8 +52,8 @@ export default function LoginPage() {
   const logoUrl = settings?.logoUrl;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-pink-100 via-fuchsia-50 to-violet-100 p-4">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm rounded-3xl bg-white p-8 shadow-xl shadow-pink-500/10 ring-1 ring-black/5">
+    <div className="app-bg flex min-h-screen items-center justify-center p-4">
+      <form onSubmit={handleSubmit} className="w-full max-w-sm rounded-3xl border border-fuchsia-100 bg-white p-8 shadow-2xl shadow-fuchsia-500/25">
         <div className="mb-6 flex flex-col items-center text-center">
           {logoUrl ? (
             <img src={logoUrl} alt={salonName} className="mb-3 h-16 w-16 rounded-2xl object-cover shadow-lg shadow-pink-500/20 ring-2 ring-pink-100" />
@@ -71,7 +71,7 @@ export default function LoginPage() {
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="mb-4 w-full rounded-xl border-2 border-neutral-200 px-3 py-2.5 outline-none transition-colors focus:border-pink-400"
+          className="mb-4 w-full rounded-full border-2 border-fuchsia-200 px-4 py-2.5 outline-none transition-colors focus:border-fuchsia-400"
           required
         />
 
@@ -94,7 +94,7 @@ export default function LoginPage() {
             type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-xl border-2 border-neutral-200 px-3 py-2.5 pr-10 outline-none transition-colors focus:border-pink-400"
+            className="w-full rounded-full border-2 border-fuchsia-200 px-4 py-2.5 pr-10 outline-none transition-colors focus:border-fuchsia-400"
             required
           />
           <button
@@ -129,7 +129,7 @@ export default function LoginPage() {
                   value={forgotEmail}
                   onChange={(e) => setForgotEmail(e.target.value)}
                   placeholder="ejemplo@barbynails.com"
-                  className="mt-1 w-full rounded-xl border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-pink-400"
+                  className="mt-1 w-full rounded-xl border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-fuchsia-400"
                   required
                 />
               </div>

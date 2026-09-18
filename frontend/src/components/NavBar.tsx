@@ -24,14 +24,14 @@ export default function NavBar() {
   const logoUrl = settings?.logoUrl;
 
   const linkClass = ({ isActive }: { isActive: boolean }) =>
-    `flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all duration-150 ${
+    `flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-semibold transition-all duration-150 ${
       isActive
         ? 'bg-gradient-to-r from-pink-500 to-fuchsia-500 text-white shadow-md shadow-pink-500/30'
         : 'text-neutral-500 hover:bg-pink-50 hover:text-pink-600'
     }`;
 
   const mobileLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `flex items-center gap-2.5 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-150 ${
+    `flex items-center gap-2.5 rounded-full px-4 py-3 text-sm font-semibold transition-all duration-150 ${
       isActive ? 'bg-gradient-to-r from-pink-500 to-fuchsia-500 text-white shadow-md shadow-pink-500/30' : 'text-neutral-600 hover:bg-pink-50'
     }`;
 
@@ -80,17 +80,17 @@ export default function NavBar() {
 
   return (
     <>
-      <nav className="border-b border-neutral-200 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70">
+      <nav className="relative border-b border-fuchsia-100 bg-white/85 shadow-[0_10px_30px_-14px_rgb(124_77_255/0.35)] backdrop-blur supports-[backdrop-filter]:bg-white/70">
         <div className="flex items-center justify-between px-3 py-3 sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
             {logoUrl ? (
               <img src={logoUrl} alt={salonName} className="h-9 w-9 shrink-0 rounded-xl object-cover ring-1 ring-pink-200 shadow-sm" />
             ) : (
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-pink-500 to-fuchsia-500 text-base shadow-md shadow-pink-500/30">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-pink-500 to-fuchsia-500 text-base shadow-lg shadow-fuchsia-500/40 ring-2 ring-neon-500/70">
                 💅
               </span>
             )}
-            <span className="hidden truncate font-bold tracking-tight text-neutral-800 sm:inline sm:max-w-[140px] xl:max-w-[220px]">{salonName}</span>
+            <span className="hidden truncate font-display font-bold uppercase tracking-wider text-neutral-800 sm:inline sm:max-w-[140px] xl:max-w-[220px]">{salonName}</span>
 
             <div className="hidden items-center gap-1.5 xl:flex">{navLinks}</div>
           </div>

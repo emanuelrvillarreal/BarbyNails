@@ -254,7 +254,7 @@ export default function CampaignsTab() {
       {showForm && (
         <Modal open onClose={() => setShowForm(false)} title="Nueva campaña" maxWidth="md">
             <div className="space-y-3">
-              <div className="flex overflow-hidden rounded-xl border-2 border-neutral-200 shadow-sm">
+              <div className="flex overflow-hidden rounded-full border-2 border-fuchsia-200 shadow-sm">
                 {(['PROMOTION', 'PAYMENT_PENDING'] as const).map((t) => (
                   <button
                     key={t}
